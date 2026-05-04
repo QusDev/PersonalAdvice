@@ -7,9 +7,14 @@ namespace Server.Data.Entities
     {
         public string Title { get; set; } = null!;
         public string? Description { get; set; }
-        public int releaseYear { get; set; }
-        public string? photoUrl { get; set; }
+        public int ReleaseYear { get; set; }
+        public string? PhotoUrl { get; set; }
         public MediaType Type { get; set; }
-        public double averageRating { get; set; }
+        public double AverageRating { get; set; }
+
+        public ICollection<GenreEntity> Genres { get; set; } = null!;
+        public ICollection<MediaCollaboratorEntity> MediaCollaborators { get; set; } = null!;
+        public ICollection<RatingEntity> Ratings { get; set; } = null!;
+        public ICollection<UserInteractionEntity> UserInteractions { get; set; } = null!;
     }
 }
