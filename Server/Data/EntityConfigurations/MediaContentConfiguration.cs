@@ -8,7 +8,13 @@ namespace Server.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<MediaContentEntity> builder)
         {
+            builder.ToTable("MediaContents");
+
             builder.HasKey(x => x.Id);
+
+            builder
+                .Property(x => x.AverageRating)
+                .HasPrecision(3, 2); 
         }
     }
 }

@@ -7,6 +7,7 @@ namespace Server.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<TrackConfiguration> builder)
         {
+            builder.ToTable("Tracks");
         }
     }
 }

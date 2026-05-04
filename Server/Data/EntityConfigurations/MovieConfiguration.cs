@@ -8,6 +8,7 @@ namespace Server.Data.EntityConfigurations
     {
         public void Configure(EntityTypeBuilder<MovieEntity> builder)
         {
+            builder.ToTable("Movies");
         }
     }
 }

@@ -10,6 +10,8 @@ namespace Server.Data.EntityConfigurations
         {
             builder.HasKey(x => x.Id);
 
+            builder.HasIndex(x => new { x.UserId, x.MediaId});
+
             builder
                 .HasOne(x => x.ApplicationUser)
                 .WithMany(x => x.Ratings)

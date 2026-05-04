@@ -10,6 +10,8 @@ namespace Server.Data.EntityConfigurations
         {
             builder.HasKey(x => x.Id);
 
+            builder.HasIndex(x => x.UserId);
+
             builder
                 .HasOne(x => x.ApplicationUser)
                 .WithMany(x => x.UserInteractions)
