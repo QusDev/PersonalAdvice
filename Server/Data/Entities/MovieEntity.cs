@@ -2,9 +2,8 @@
 {
     public class MovieEntity : MediaContentEntity
     {
-        public int ContentId { get; set; }
         public string? Director { get; set; }
-        public int durationMinutes { get; set; }
-        public string videoQuality { get; set; } = null!;
+        public int DurationMinutes { get; set; }
+        public string VideoQuality { get; set; } = null!;
     }
 }

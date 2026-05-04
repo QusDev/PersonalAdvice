@@ -7,5 +7,7 @@ namespace Server.Data.Entities
         public string FullName { get; set; } = null!;
         public string? Bio { get; set; }
         public string? PhotoUrl { get; set; }
+
+        public ICollection<MediaCollaboratorEntity> MediaCollaborators { get; set; } = null!;
     }
 }
