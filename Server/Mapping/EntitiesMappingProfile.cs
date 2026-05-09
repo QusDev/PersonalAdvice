@@ -9,6 +9,7 @@ namespace Server.Mapping
         public EntitiesMappingProfile()
         {
             CreateMap<GenreEntity, GenreDto>().ReverseMap();
+            CreateMap<PeopleEntity, PeopleDto>().ReverseMap();
         }
     }
 }

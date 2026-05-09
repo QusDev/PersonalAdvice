@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using Server.Data.DbContext;
 using Server.Data.Entities.Identity;
 using Server.Data.Seeders;
@@ -92,7 +91,10 @@ builder.Services.AddAuthorization(options =>
 #region Dependencies
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+
 builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IPeopleService, PeopleService>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(EntitiesMappingProfile).Assembly);

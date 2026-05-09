@@ -9,7 +9,7 @@ namespace Server.UnitOfWork
         IGenericRepository<MovieEntity> Movies { get; }
         IGenreRepository Genres { get; }
         IGenericRepository<TrackEntity> Tracks { get; }
-        IGenericRepository<PeopleEntity> People { get; }
+        IPeopleRepository People { get; }
         IGenericRepository<RatingEntity> Ratings { get; }
         IGenericRepository<UserInteractionEntity> UserInteractions { get; }
         IGenericRepository<MediaCollaboratorEntity> MediaCollaborators { get; }

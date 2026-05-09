@@ -11,7 +11,7 @@ namespace Server.UnitOfWork
         private IGenericRepository<MovieEntity>? _movies;
         private IGenreRepository? _genres;
         private IGenericRepository<TrackEntity>? _tracks;
-        private IGenericRepository<PeopleEntity>? _people;
+        private IPeopleRepository? _people;
         private IGenericRepository<RatingEntity>? _ratings;
         private IGenericRepository<UserInteractionEntity>? _userInteractions;
         private IGenericRepository<MediaCollaboratorEntity>? _mediaCollaborators;
@@ -28,7 +28,7 @@ namespace Server.UnitOfWork
 
         public IGenericRepository<TrackEntity> Tracks => _tracks ??= new GenericRepository<TrackEntity>(_context);
 
-        public IGenericRepository<PeopleEntity> People => _people ??= new GenericRepository<PeopleEntity>(_context);
+        public IPeopleRepository People => _people ??= new PeopleRepository(_context);
 
         public IGenericRepository<RatingEntity> Ratings => _ratings ??= new GenericRepository<RatingEntity>(_context);
 
