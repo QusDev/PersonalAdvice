@@ -6,6 +6,7 @@ using Shared;
 using Shared.DTOs.Entities;
 using Shared.DTOs.Movie;
 using Shared.DTOs.Repositories;
+using System.Linq.Expressions;
 
 namespace Server.Services.Entities
 {
@@ -60,14 +61,28 @@ namespace Server.Services.Entities
 
         public async Task<Result<PagedResponse<MovieDto>>> GetAllAsync(GetAllMovieDto dto)
         {
-            var movies = await _unitOfWork.Movies.GetAllAsync(pageNumber: dto.PageNumber, pageSize: dto.PageSize, includes: m => m.Genres);
+            var movies = await _unitOfWork.Movies.GetAllAsync(
+                pageNumber: dto.PageNumber,
+                pageSize: dto.PageSize,
+                includes:
+                [
+                    m => m.Genres,
+                    m => m.MediaCollaborators,
+                ]);
+
             var result = _mapper.Map<PagedResponse<MovieDto>>(movies);
             return Result<PagedResponse<MovieDto>>.Success(result);
         }
 
         public async Task<Result<MovieDto>> GetByIdAsync(int id)
         {
-            var movie = await _unitOfWork.Movies.GetByIdAsync(id, includes: m => m.Genres);
+            var movie = await _unitOfWork.Movies.GetByIdAsync(
+                id,
+                includes:
+                [
+                    m => m.Genres,
+                    m => m.MediaCollaborators,
+                ]);
 
             if (movie == null)
             {

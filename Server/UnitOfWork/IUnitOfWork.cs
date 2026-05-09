@@ -12,7 +12,7 @@ namespace Server.UnitOfWork
         IPeopleRepository People { get; }
         IGenericRepository<RatingEntity> Ratings { get; }
         IGenericRepository<UserInteractionEntity> UserInteractions { get; }
-        IGenericRepository<MediaCollaboratorEntity> MediaCollaborators { get; }
+        IMediaCollaboratorRepository MediaCollaborators { get; }
         IGenericRepository<MediaContentEntity> MediaContent { get; }
 
         Task<int> SaveAsync();

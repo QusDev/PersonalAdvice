@@ -14,7 +14,7 @@ namespace Server.UnitOfWork
         private IPeopleRepository? _people;
         private IGenericRepository<RatingEntity>? _ratings;
         private IGenericRepository<UserInteractionEntity>? _userInteractions;
-        private IGenericRepository<MediaCollaboratorEntity>? _mediaCollaborators;
+        private IMediaCollaboratorRepository? _mediaCollaborators;
         private IGenericRepository<MediaContentEntity>? _mediaContent;
 
         public UnitOfWork(ApplicationDbContext context)
@@ -34,7 +34,7 @@ namespace Server.UnitOfWork
 
         public IGenericRepository<UserInteractionEntity> UserInteractions => _userInteractions ??= new GenericRepository<UserInteractionEntity>(_context);
 
-        public IGenericRepository<MediaCollaboratorEntity> MediaCollaborators => _mediaCollaborators ??= new GenericRepository<MediaCollaboratorEntity>(_context);
+        public IMediaCollaboratorRepository MediaCollaborators => _mediaCollaborators ??= new MediaCollaboratorRepository(_context);
 
         public IGenericRepository<MediaContentEntity> MediaContent => _mediaContent ??= new GenericRepository<MediaContentEntity>(_context);
 

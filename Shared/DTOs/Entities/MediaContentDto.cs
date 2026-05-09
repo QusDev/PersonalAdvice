@@ -12,5 +12,6 @@ namespace Shared.DTOs.Entities
         public double AverageRating { get; set; }
 
         public ICollection<GenreDto> Genres { get; set; } = null!;
+        public ICollection<MediaCollaboratorDto> MediaCollaborators { get; set; } = null!;
     }
 }
