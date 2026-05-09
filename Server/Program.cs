@@ -96,6 +96,7 @@ builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IPeopleService, PeopleService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>();
+builder.Services.AddScoped<ITrackService, TrackService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

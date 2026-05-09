@@ -4,35 +4,35 @@ using Server.Services.Entities.Interfaces;
 using Server.UnitOfWork;
 using Shared;
 using Shared.DTOs.Entities;
-using Shared.DTOs.Movie;
 using Shared.DTOs.Repositories;
+using Shared.DTOs.Tracks;
 
 namespace Server.Services.Entities
 {
-    public class MovieService : IMovieService
+    public class TrackService : ITrackService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public MovieService(IUnitOfWork unitOfWork, IMapper mapper)
+        public TrackService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
-        public async Task<Result<bool>> AddAsync(CreateMovieDto dto)
+        public async Task<Result<bool>> AddAsync(CreateTrackDto dto)
         {
-            var movie = _mapper.Map<MovieEntity>(dto);
+            var track = _mapper.Map<TrackEntity>(dto);
 
-            movie.Type = Shared.Enums.MediaType.Movie;
+            track.Type = Shared.Enums.MediaType.Music;
 
             if (dto.GenreIds.Any())
             {
                 var genres = await _unitOfWork.Genres.GetAllAsync(filter: g => dto.GenreIds.Contains(g.Id));
-                movie.Genres = genres.Items.ToList();
+                track.Genres = genres.Items.ToList();
             }
 
-            await _unitOfWork.Movies.AddAsync(movie);
+            await _unitOfWork.Tracks.AddAsync(track);
             await _unitOfWork.SaveAsync();
 
             return Result<bool>.Success(true);
@@ -40,22 +40,22 @@ namespace Server.Services.Entities
 
         public async Task<Result<bool>> DeleteAsync(int id)
         {
-            var movie = await _unitOfWork.Movies.GetByIdAsync(id);
+            var track = await _unitOfWork.Tracks.GetByIdAsync(id);
 
-            if (movie == null)
+            if (track == null)
             {
-                return Result<bool>.Fail(Error.NotFound($"Movie with id: {id} not found"));
+                return Result<bool>.Fail(Error.NotFound($"Track with id: {id} not found"));
             }
 
-            _unitOfWork.Movies.Delete(movie);
+            _unitOfWork.Tracks.Delete(track);
             await _unitOfWork.SaveAsync();
 
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<PagedResponse<MovieDto>>> GetAllAsync(GetAllMovieDto dto)
+        public async Task<Result<PagedResponse<TrackDto>>> GetAllAsync(GetAllTrackDto dto)
         {
-            var movies = await _unitOfWork.Movies.GetAllAsync(
+            var tracks = await _unitOfWork.Tracks.GetAllAsync(
                 pageNumber: dto.PageNumber,
                 pageSize: dto.PageSize,
                 includes:
@@ -64,13 +64,13 @@ namespace Server.Services.Entities
                     m => m.MediaCollaborators,
                 ]);
 
-            var result = _mapper.Map<PagedResponse<MovieDto>>(movies);
-            return Result<PagedResponse<MovieDto>>.Success(result);
+            var result = _mapper.Map<PagedResponse<TrackDto>>(tracks);
+            return Result<PagedResponse<TrackDto>>.Success(result);
         }
 
-        public async Task<Result<MovieDto>> GetByIdAsync(int id)
+        public async Task<Result<TrackDto>> GetByIdAsync(int id)
         {
-            var movie = await _unitOfWork.Movies.GetByIdAsync(
+            var track = await _unitOfWork.Tracks.GetByIdAsync(
                 id,
                 includes:
                 [
@@ -78,38 +78,38 @@ namespace Server.Services.Entities
                     m => m.MediaCollaborators,
                 ]);
 
-            if (movie == null)
+            if (track == null)
             {
-                return Result<MovieDto>.Fail(Error.NotFound($"Movie with id: {id} not found"));
+                return Result<TrackDto>.Fail(Error.NotFound($"Track with id: {id} not found"));
             }
 
-            var movieDto = _mapper.Map<MovieDto>(movie);
-            return Result<MovieDto>.Success(movieDto);
+            var trackDto = _mapper.Map<TrackDto>(track);
+            return Result<TrackDto>.Success(trackDto);
         }
 
-        public async Task<Result<bool>> UpdateAsync(UpdateMovieDto dto)
+        public async Task<Result<bool>> UpdateAsync(UpdateTrackDto dto)
         {
-            var movie = await _unitOfWork.Movies.GetByIdAsync(dto.Id, includes: m => m.Genres);
+            var track = await _unitOfWork.Tracks.GetByIdAsync(dto.Id, includes: m => m.Genres);
 
-            if (movie == null)
+            if (track == null)
             {
-                return Result<bool>.Fail(Error.NotFound($"Movie with id: {dto.Id} not found"));
+                return Result<bool>.Fail(Error.NotFound($"Track with id: {dto.Id} not found"));
             }
 
-            _mapper.Map(dto, movie);
+            _mapper.Map(dto, track);
 
             if (dto.GenreIds != null && dto.GenreIds.Any())
             {
                 var selectedGenres = await _unitOfWork.Genres.GetAllAsync(filter: g => dto.GenreIds.Contains(g.Id));
-                movie.Genres.Clear();
+                track.Genres.Clear();
 
                 foreach (var genre in selectedGenres.Items)
                 {
-                    movie.Genres.Add(genre);
+                    track.Genres.Add(genre);
                 }
             }
 
-            _unitOfWork.Movies.Update(movie);
+            _unitOfWork.Tracks.Update(track);
             await _unitOfWork.SaveAsync();
             return Result<bool>.Success(true);
         }
