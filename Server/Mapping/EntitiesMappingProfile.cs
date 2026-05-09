@@ -10,6 +10,7 @@ namespace Server.Mapping
         {
             CreateMap<GenreEntity, GenreDto>().ReverseMap();
             CreateMap<PeopleEntity, PeopleDto>().ReverseMap();
+            CreateMap<MovieEntity, MovieDto>().ReverseMap();
         }
     }
 }

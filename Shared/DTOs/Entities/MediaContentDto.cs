@@ -10,5 +10,7 @@ namespace Shared.DTOs.Entities
         public string? PhotoUrl { get; set; }
         public MediaType Type { get; set; }
         public double AverageRating { get; set; }
+
+        public ICollection<GenreDto> Genres { get; set; } = null!;
     }
 }

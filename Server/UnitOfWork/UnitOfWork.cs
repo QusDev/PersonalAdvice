@@ -8,7 +8,7 @@ namespace Server.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
-        private IGenericRepository<MovieEntity>? _movies;
+        private IMovieRepository? _movies;
         private IGenreRepository? _genres;
         private IGenericRepository<TrackEntity>? _tracks;
         private IPeopleRepository? _people;
@@ -22,7 +22,7 @@ namespace Server.UnitOfWork
             _context = context;
         }
 
-        public IGenericRepository<MovieEntity> Movies => _movies ??= new GenericRepository<MovieEntity>(_context);
+        public IMovieRepository Movies => _movies ??= new MovieRepository(_context);
 
         public IGenreRepository Genres => _genres ??= new GenreRepository(_context);
 

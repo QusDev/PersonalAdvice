@@ -6,7 +6,7 @@ namespace Server.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
-        IGenericRepository<MovieEntity> Movies { get; }
+        IMovieRepository Movies { get; }
         IGenreRepository Genres { get; }
         IGenericRepository<TrackEntity> Tracks { get; }
         IPeopleRepository People { get; }
