@@ -18,20 +18,18 @@ namespace Server.Repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task<PagedResponse<T>> GetAllAsync(
-            Expression<Func<T, bool>>? filter = null, 
-            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null, 
-            int pageNumber = 1, 
-            int pageSize = 10, 
+        public virtual async Task<PagedResponse<TResult>> GetAllAsync<TResult>(
+            Expression<Func<T, TResult>> selector,
+            Expression<Func<T, bool>>? filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            int pageNumber = 1,
+            int pageSize = 10,
             params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet;
 
             if (includes.Any())
-            {
-                query = includes.Aggregate(query,
-                    (current, includeProperty) => current.Include(includeProperty));
-            }
+                query = includes.Aggregate(query, (current, include) => current.Include(include));
 
             if (filter != null)
                 query = query.Where(filter);
@@ -44,9 +42,10 @@ namespace Server.Repositories
             var items = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .Select(selector)
                 .ToListAsync();
 
-            return new PagedResponse<T>
+            return new PagedResponse<TResult>
             {
                 Items = items,
                 TotalCount = totalCount,
@@ -55,7 +54,37 @@ namespace Server.Repositories
             };
         }
 
-        public virtual async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
+        public virtual Task<PagedResponse<T>> GetAllAsync(
+            Expression<Func<T, bool>>? filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            int pageNumber = 1,
+            int pageSize = 10,
+            params Expression<Func<T, object>>[] includes)
+        {
+            return GetAllAsync(x => x, filter, orderBy, pageNumber, pageSize, includes);
+        }
+
+        public virtual async Task<TResult?> GetByIdAsync<TResult>(
+            int id,
+            Expression<Func<T, TResult>> selector,
+            params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (includes.Any())
+                query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+            return await query
+                .Where(e => EF.Property<int>(e, "Id") == id)
+                .Select(selector)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual Task<T?> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
+        {
+            return GetByIdAsync(id, x => x, includes);
+        }
+
         public virtual async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
         public virtual void Update(T entity) => _dbSet.Update(entity);
         public virtual void Delete(T entity) => _dbSet.Remove(entity);

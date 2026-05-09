@@ -6,7 +6,7 @@ using Shared.DTOs.Identity;
 namespace Server.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IIdentityService _identityService;

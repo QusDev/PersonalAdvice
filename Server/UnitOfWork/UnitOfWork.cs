@@ -9,7 +9,7 @@ namespace Server.UnitOfWork
     {
         private readonly ApplicationDbContext _context;
         private IGenericRepository<MovieEntity>? _movies;
-        private IGenericRepository<GenreEntity>? _genres;
+        private IGenreRepository? _genres;
         private IGenericRepository<TrackEntity>? _tracks;
         private IGenericRepository<PeopleEntity>? _people;
         private IGenericRepository<RatingEntity>? _ratings;
@@ -24,7 +24,7 @@ namespace Server.UnitOfWork
 
         public IGenericRepository<MovieEntity> Movies => _movies ??= new GenericRepository<MovieEntity>(_context);
 
-        public IGenericRepository<GenreEntity> Genres => _genres ??= new GenericRepository<GenreEntity>(_context);
+        public IGenreRepository Genres => _genres ??= new GenreRepository(_context);
 
         public IGenericRepository<TrackEntity> Tracks => _tracks ??= new GenericRepository<TrackEntity>(_context);
 

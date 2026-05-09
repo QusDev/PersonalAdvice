@@ -1,12 +1,13 @@
 ﻿using Server.Data.Entities;
 using Server.Repositories.Interfaces;
+using Server.Services.Entities.Interfaces;
 
 namespace Server.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<MovieEntity> Movies { get; }
-        IGenericRepository<GenreEntity> Genres { get; }
+        IGenreRepository Genres { get; }
         IGenericRepository<TrackEntity> Tracks { get; }
         IGenericRepository<PeopleEntity> People { get; }
         IGenericRepository<RatingEntity> Ratings { get; }
