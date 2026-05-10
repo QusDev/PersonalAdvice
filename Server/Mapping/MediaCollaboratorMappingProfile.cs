@@ -6,9 +6,9 @@ using Shared.DTOs.Repositories;
 
 namespace Server.Mapping
 {
-    public class MediaCollaboratorProfile : Profile
+    public class MediaCollaboratorMappingProfile : Profile
     {
-        public MediaCollaboratorProfile()
+        public MediaCollaboratorMappingProfile()
         {
             CreateMap<CreateMediaCollaboratorDto, MediaCollaboratorEntity>();
             CreateMap<UpdateMediaCollaboratorDto, MediaCollaboratorEntity>();

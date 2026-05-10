@@ -13,6 +13,7 @@ namespace Server.Mapping
             CreateMap<MovieEntity, MovieDto>().ReverseMap();
             CreateMap<MediaCollaboratorEntity, MediaCollaboratorDto>().ReverseMap();
             CreateMap<TrackEntity, TrackDto>().ReverseMap();
+            CreateMap<UserInteractionEntity, UserInteractionDto>().ReverseMap();
         }
     }
 }

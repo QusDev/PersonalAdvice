@@ -10,10 +10,10 @@ namespace Server.UnitOfWork
         private readonly ApplicationDbContext _context;
         private IMovieRepository? _movies;
         private IGenreRepository? _genres;
-        private IGenericRepository<TrackEntity>? _tracks;
+        private ITrackRepository? _tracks;
         private IPeopleRepository? _people;
         private IGenericRepository<RatingEntity>? _ratings;
-        private IGenericRepository<UserInteractionEntity>? _userInteractions;
+        private IUserInteractionRepository? _userInteractions;
         private IMediaCollaboratorRepository? _mediaCollaborators;
         private IGenericRepository<MediaContentEntity>? _mediaContent;
 
@@ -26,13 +26,13 @@ namespace Server.UnitOfWork
 
         public IGenreRepository Genres => _genres ??= new GenreRepository(_context);
 
-        public IGenericRepository<TrackEntity> Tracks => _tracks ??= new GenericRepository<TrackEntity>(_context);
+        public ITrackRepository Tracks => _tracks ??= new TrackRepository(_context);
 
         public IPeopleRepository People => _people ??= new PeopleRepository(_context);
 
         public IGenericRepository<RatingEntity> Ratings => _ratings ??= new GenericRepository<RatingEntity>(_context);
 
-        public IGenericRepository<UserInteractionEntity> UserInteractions => _userInteractions ??= new GenericRepository<UserInteractionEntity>(_context);
+        public IUserInteractionRepository UserInteractions => _userInteractions ??= new UserInteractionRepository(_context);
 
         public IMediaCollaboratorRepository MediaCollaborators => _mediaCollaborators ??= new MediaCollaboratorRepository(_context);
 

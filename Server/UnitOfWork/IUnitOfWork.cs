@@ -8,10 +8,10 @@ namespace Server.UnitOfWork
     {
         IMovieRepository Movies { get; }
         IGenreRepository Genres { get; }
-        IGenericRepository<TrackEntity> Tracks { get; }
+        ITrackRepository Tracks { get; }
         IPeopleRepository People { get; }
         IGenericRepository<RatingEntity> Ratings { get; }
-        IGenericRepository<UserInteractionEntity> UserInteractions { get; }
+        IUserInteractionRepository UserInteractions { get; }
         IMediaCollaboratorRepository MediaCollaborators { get; }
         IGenericRepository<MediaContentEntity> MediaContent { get; }
 
