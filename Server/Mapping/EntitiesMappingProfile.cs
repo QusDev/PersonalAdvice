@@ -14,6 +14,7 @@ namespace Server.Mapping
             CreateMap<MediaCollaboratorEntity, MediaCollaboratorDto>().ReverseMap();
             CreateMap<TrackEntity, TrackDto>().ReverseMap();
             CreateMap<UserInteractionEntity, UserInteractionDto>().ReverseMap();
+            CreateMap<RatingEntity, RatingDto>().ReverseMap();
         }
     }
 }

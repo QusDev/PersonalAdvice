@@ -98,6 +98,7 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>();
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
+builder.Services.AddScoped<IRatingService, RatingService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 

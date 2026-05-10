@@ -10,7 +10,7 @@ namespace Server.UnitOfWork
         IGenreRepository Genres { get; }
         ITrackRepository Tracks { get; }
         IPeopleRepository People { get; }
-        IGenericRepository<RatingEntity> Ratings { get; }
+        IRatingRepository Ratings { get; }
         IUserInteractionRepository UserInteractions { get; }
         IMediaCollaboratorRepository MediaCollaborators { get; }
         IGenericRepository<MediaContentEntity> MediaContent { get; }

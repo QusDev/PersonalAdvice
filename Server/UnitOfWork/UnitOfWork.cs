@@ -12,7 +12,7 @@ namespace Server.UnitOfWork
         private IGenreRepository? _genres;
         private ITrackRepository? _tracks;
         private IPeopleRepository? _people;
-        private IGenericRepository<RatingEntity>? _ratings;
+        private IRatingRepository? _ratings;
         private IUserInteractionRepository? _userInteractions;
         private IMediaCollaboratorRepository? _mediaCollaborators;
         private IGenericRepository<MediaContentEntity>? _mediaContent;
@@ -30,7 +30,7 @@ namespace Server.UnitOfWork
 
         public IPeopleRepository People => _people ??= new PeopleRepository(_context);
 
-        public IGenericRepository<RatingEntity> Ratings => _ratings ??= new GenericRepository<RatingEntity>(_context);
+        public IRatingRepository Ratings => _ratings ??= new RatingRepository(_context);
 
         public IUserInteractionRepository UserInteractions => _userInteractions ??= new UserInteractionRepository(_context);
 
