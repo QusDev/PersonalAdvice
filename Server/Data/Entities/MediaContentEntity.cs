@@ -1,5 +1,5 @@
 ﻿using Server.Data.Constants;
-using Server.Data.Enums;
+using Shared.Enums;
 
 namespace Server.Data.Entities
 {

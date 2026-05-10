@@ -1,4 +1,4 @@
-﻿namespace Server.Data.Enums
+﻿namespace Shared.Enums
 {
     public enum UserInteractionType
     {

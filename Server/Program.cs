@@ -2,12 +2,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using Server.Data.DbContext;
 using Server.Data.Entities.Identity;
 using Server.Data.Seeders;
+using Server.Mapping;
+using Server.Services.Entities;
+using Server.Services.Entities.Interfaces;
 using Server.Services.Identity;
 using Server.Services.Identity.Interfaces;
+using Server.UnitOfWork;
 using Shared.Constants;
 using System.Text;
 
@@ -88,6 +91,18 @@ builder.Services.AddAuthorization(options =>
 #region Dependencies
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+
+builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IPeopleService, PeopleService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>();
+builder.Services.AddScoped<ITrackService, TrackService>();
+builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddAutoMapper(cfg => { }, typeof(EntitiesMappingProfile).Assembly);
 #endregion
 
 #region NSwag
