@@ -5,7 +5,7 @@ namespace Shared.DTOs.Movie
     public class CreateMovieDto
     {
         [Required]
-        public int DurationMinutes { get; set; }
+        public double DurationMinutes { get; set; }
         [Required]
         public bool Adult { get; set; }
 

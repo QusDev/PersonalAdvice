@@ -11,6 +11,7 @@ namespace Server.Data.Entities
         public string? PhotoUrl { get; set; }
         public MediaType Type { get; set; }
         public double AverageRating { get; set; }
+        public double DurationMinutes { get; set; }
 
         public ICollection<GenreEntity> Genres { get; set; } = null!;
         public ICollection<MediaCollaboratorEntity> MediaCollaborators { get; set; } = null!;

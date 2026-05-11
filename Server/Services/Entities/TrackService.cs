@@ -20,7 +20,7 @@ namespace Server.Services.Entities
             _mapper = mapper;
         }
 
-        public async Task<Result<bool>> AddAsync(CreateTrackDto dto)
+        public async Task<Result<int>> AddAsync(CreateTrackDto dto)
         {
             var track = _mapper.Map<TrackEntity>(dto);
 
@@ -35,7 +35,7 @@ namespace Server.Services.Entities
             await _unitOfWork.Tracks.AddAsync(track);
             await _unitOfWork.SaveAsync();
 
-            return Result<bool>.Success(true);
+            return Result<int>.Success(track.Id);
         }
 
         public async Task<Result<bool>> DeleteAsync(int id)
@@ -85,6 +85,11 @@ namespace Server.Services.Entities
 
             var trackDto = _mapper.Map<TrackDto>(track);
             return Result<TrackDto>.Success(trackDto);
+        }
+
+        public async Task<bool> IsExistsTrackAsync(string title, string albumName)
+        {
+            return await _unitOfWork.Tracks.IsExistsTrackAsync(title, albumName);
         }
 
         public async Task<Result<bool>> UpdateAsync(UpdateTrackDto dto)

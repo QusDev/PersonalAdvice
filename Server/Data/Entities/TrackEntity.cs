@@ -2,7 +2,7 @@
 {
     public class TrackEntity : MediaContentEntity
     {
-        public int BPM { get; set; }
+        public string AlbumName { get; set; } = null!;
         public string? Lyrics { get; set; }
         public string? AudioUrl { get; set; }
     }

@@ -37,8 +37,8 @@ namespace Server.Services.Tmdb
             _mapper = mapper;
             _httpClient = httpClient;
             _configuration = configuration;
-            _apiKey = configuration["TheMovieDb:ApiKey"]!;
-            _baseUrl = configuration["TheMovieDb:BaseUrl"]!;
+            _apiKey = configuration["TheMovieDbApi:ApiKey"]!;
+            _baseUrl = configuration["TheMovieDbApi:BaseUrl"]!;
         }
 
         public async Task<Result<int>> ImportMovieWithCreditsAsync(int tmdbId)

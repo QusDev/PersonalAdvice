@@ -2,8 +2,7 @@
 {
     public class TrackDto : MediaContentDto
     {
-        public int Id { get; set; }
-        public int BPM { get; set; }
+        public string AlbumName { get; set; } = null!;
         public string? Lyrics { get; set; }
         public string? AudioUrl { get; set; }
     }

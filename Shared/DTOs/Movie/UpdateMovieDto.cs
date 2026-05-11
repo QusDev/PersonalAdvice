@@ -6,7 +6,7 @@ namespace Shared.DTOs.Movie
     {
         [Required]
         public int Id { get; set; }
-        public int? DurationMinutes { get; set; } = null;
+        public double? DurationMinutes { get; set; } = null;
         public bool? Adult { get; set; } = null;
 
         public string? Title { get; set; } = null;
