@@ -1,0 +1,103 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+
+@using Client.Services.Interfaces
+@using Shared.DTOs.Identity
+
+@inject IAuthService AuthService
+@inject NavigationManager NavManager
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg border-0" style="width: 100%; max-width: 400px; border-radius: 1rem;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-uppercase">Вхід</h2>
+                <p class="text-muted">Вітаємо знову!</p>
+            </div>
+
+            <EditForm FormName="LoginForm" Model="_loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope"></i></span>
+                        <InputText @bind-Value="_loginModel.Email" class="form-control border-start-0 bg-light" placeholder="email@example.com" />
+                    </div>
+                    <ValidationMessage For="@(() => _loginModel.Email)" class="text-danger small" />
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Пароль</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock"></i></span>
+                        <InputText @bind-Value="_loginModel.Password" type="password" class="form-control border-start-0 bg-light" placeholder="******" />
+                    </div>
+                    <ValidationMessage For="@(() => _loginModel.Password)" class="text-danger small" />
+                </div>
+
+                <!-- Вивід помилок Failure від бекенда -->
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger py-2 px-3 mb-3 small" role="alert">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        @_errorMessage
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm mb-3" disabled="@_isProcessing">
+                    @if (_isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        @* Вхід... *@
+                    }
+                    else
+                    {
+                        <span>Увійти</span>
+                    }
+                </button>
+
+                <div class="text-center">
+                    <span class="small text-muted">Немає акаунту?</span>
+                    <a href="/register" class="small fw-bold text-decoration-none ms-1">Зареєструватися</a>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginDto _loginModel = new();
+    private string _errorMessage = string.Empty;
+    private bool _isProcessing;
+
+    private async Task HandleLogin()
+    {
+        _isProcessing = true;
+        _errorMessage = string.Empty;
+
+        // Використовуємо метод LoginAsync (або Login) вашого AuthService
+        var result = await AuthService.LoginAsync(_loginModel);
+
+        if (result.isSuccess)
+        {
+            NavManager.NavigateTo("/");
+        }
+        else
+        {
+            // Обробляємо масив помилок Failure
+            if (result.message != null && result.message != "")
+            {
+                _errorMessage = result.message;
+            }
+            else
+            {
+                _errorMessage = "Невірний email або пароль.";
+            }
+        }
+
+        _isProcessing = false;
+    }
+}
