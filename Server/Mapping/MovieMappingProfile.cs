@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Server.Data.Entities;
 using Shared.DTOs.Entities;
-using Shared.DTOs.Genres;
 using Shared.DTOs.Movie;
 using Shared.DTOs.Repositories;
 

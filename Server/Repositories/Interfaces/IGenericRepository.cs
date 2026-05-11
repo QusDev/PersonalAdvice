@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Server.Repositories.Interfaces
 {
-    public interface IGenericRepository<T> where T: class
+    public interface IGenericRepository<T> where T: class, IEntity
     {
         Task<PagedResponse<TResult>> GetAllAsync<TResult>(
             Expression<Func<T, TResult>> selector,
@@ -35,7 +35,7 @@ namespace Server.Repositories.Interfaces
             params Expression<Func<T, object>>[] includes
             );
 
-        Task AddAsync(T entity);
+        Task<int> AddAsync(T entity);
         void Update(T entity);
         void Delete(T entity);
     }

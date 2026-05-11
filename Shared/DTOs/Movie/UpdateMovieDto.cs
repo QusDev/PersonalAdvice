@@ -6,9 +6,8 @@ namespace Shared.DTOs.Movie
     {
         [Required]
         public int Id { get; set; }
-        public string? Director { get; set; } = null;
-        public int? DurationMinutes { get; set; } = null;
-        public string? VideoQuality { get; set; } = null;
+        public double? DurationMinutes { get; set; } = null;
+        public bool? Adult { get; set; } = null;
 
         public string? Title { get; set; } = null;
         [MaxLength(2000)]

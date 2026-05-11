@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
 using Server.Services.Entities.Interfaces;
+using Server.Services.Jamendo.Interfaces;
 using Shared.Constants;
 using Shared.DTOs.Tracks;
 
@@ -12,10 +13,12 @@ namespace Server.Controllers
     public class TrackController : ControllerBase
     {
         private readonly ITrackService _trackService;
+        private readonly IJamendoService _jamendoService;
 
-        public TrackController(ITrackService trackService)
+        public TrackController(ITrackService trackService, IJamendoService jamendoService)
         {
             _trackService = trackService;
+            _jamendoService = jamendoService;
         }
 
         [HttpPost]
@@ -84,6 +87,23 @@ namespace Server.Controllers
             }
 
             return Ok(result.Value);
+        }
+
+        [HttpPost("import/popular")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1, [FromQuery]int pageSize = 10)
+        {
+            if (page < 1 || page > 500)
+                return BadRequest("The page number must be between 1 and 500");
+
+            var result = await _jamendoService.ImportTrendingTracksAsync(page, pageSize);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok($"Import new movies: {result.Value}");
         }
     }
 }

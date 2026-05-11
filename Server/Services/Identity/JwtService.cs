@@ -29,8 +29,8 @@ namespace Server.Services.Identity
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var expiresToken = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:ExpiresOnMinute"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var expiresToken = DateTime.UtcNow.AddMinutes(double.Parse(_configuration["Jwt:ExpiresOnMinute"]!));
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],

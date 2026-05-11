@@ -11,6 +11,11 @@ namespace Server.Repositories
         {
         }
 
+        public async Task<GenreEntity?> GetByNameAsync(string name)
+        {
+            return await _dbSet.FirstOrDefaultAsync(g => g.Name == name);
+        }
+
         public async Task<bool> IsExistByNameAsync(string name)
         {
             return await _dbSet.AnyAsync(x => x.Name == name);

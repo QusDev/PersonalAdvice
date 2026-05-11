@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace Server.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : class, IEntity
     {
         protected readonly ApplicationDbContext _context;
         protected readonly DbSet<T> _dbSet;
@@ -85,7 +85,11 @@ namespace Server.Repositories
             return GetByIdAsync(id, x => x, includes);
         }
 
-        public virtual async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
+        public virtual async Task<int> AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            return entity.Id;
+        }
         public virtual void Update(T entity) => _dbSet.Update(entity);
         public virtual void Delete(T entity) => _dbSet.Remove(entity);
     }

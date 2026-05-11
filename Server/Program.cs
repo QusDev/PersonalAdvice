@@ -10,6 +10,10 @@ using Server.Services.Entities;
 using Server.Services.Entities.Interfaces;
 using Server.Services.Identity;
 using Server.Services.Identity.Interfaces;
+using Server.Services.Jamendo;
+using Server.Services.Jamendo.Interfaces;
+using Server.Services.Tmdb;
+using Server.Services.Tmdb.Interfaces;
 using Server.UnitOfWork;
 using Shared.Constants;
 using System.Text;
@@ -91,7 +95,6 @@ builder.Services.AddAuthorization(options =>
 #region Dependencies
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
-
 builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IPeopleService, PeopleService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
@@ -99,8 +102,12 @@ builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>(
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
-
+builder.Services.AddScoped<ITmdbService, TmdbService>();
+builder.Services.AddScoped<IJamendoService, JamendoService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddHttpClient<ITmdbService, TmdbService>();
+builder.Services.AddHttpClient<IJamendoService, JamendoService>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(EntitiesMappingProfile).Assembly);
 #endregion

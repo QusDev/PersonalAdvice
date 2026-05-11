@@ -298,6 +298,9 @@ namespace Server.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<double>("DurationMinutes")
+                        .HasColumnType("double precision");
+
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("text");
 
@@ -406,15 +409,8 @@ namespace Server.Migrations
                 {
                     b.HasBaseType("Server.Data.Entities.MediaContentEntity");
 
-                    b.Property<string>("Director")
-                        .HasColumnType("text");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("VideoQuality")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("Adult")
+                        .HasColumnType("boolean");
 
                     b.ToTable("Movies", (string)null);
                 });
@@ -423,11 +419,12 @@ namespace Server.Migrations
                 {
                     b.HasBaseType("Server.Data.Entities.MediaContentEntity");
 
-                    b.Property<string>("AudioUrl")
+                    b.Property<string>("AlbumName")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("BPM")
-                        .HasColumnType("integer");
+                    b.Property<string>("AudioUrl")
+                        .HasColumnType("text");
 
                     b.Property<string>("Lyrics")
                         .HasColumnType("text");

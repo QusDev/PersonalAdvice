@@ -20,11 +20,11 @@ namespace Server.Services.Entities
             _mapper = mapper;
         }
 
-        public async Task<Result<bool>> AddAsync(CreateGenreDto dto)
+        public async Task<Result<int>> AddAsync(CreateGenreDto dto)
         {
             if (await _unitOfWork.Genres.IsExistByNameAsync(dto.Name))
             {
-                return Result<bool>.Fail(Error.Conflict($"Genre with name: {dto.Name} already exists"));
+                return Result<int>.Fail(Error.Conflict($"Genre with name: {dto.Name} already exists"));
             }
 
             var genre = _mapper.Map<GenreEntity>(dto);
@@ -32,7 +32,7 @@ namespace Server.Services.Entities
             await _unitOfWork.Genres.AddAsync(genre);
             await _unitOfWork.SaveAsync();
 
-            return Result<bool>.Success(true);
+            return Result<int>.Success(genre.Id);
         }
 
         public async Task<Result<bool>> DeleteAsync(int id)
@@ -70,6 +70,19 @@ namespace Server.Services.Entities
             return Result<GenreDto>.Success(genreDto);
         }
 
+        public async Task<Result<GenreDto>> GetByNameAsync(string name)
+        {
+            var genre = await _unitOfWork.Genres.GetByNameAsync(name);
+
+            if (genre == null)
+            {
+                return Result<GenreDto>.Fail(Error.NotFound($"Genre with name: {name} not found"));
+            }
+
+            var result = _mapper.Map<GenreDto>(genre);
+
+            return Result<GenreDto>.Success(result);
+        }
 
         public async Task<Result<bool>> UpdateAsync(UpdateGenreDto dto)
         {

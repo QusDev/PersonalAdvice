@@ -7,10 +7,11 @@ namespace Server.Services.Entities.Interfaces
 {
     public interface ITrackService
     {
-        Task<Result<bool>> AddAsync(CreateTrackDto dto);
+        Task<Result<int>> AddAsync(CreateTrackDto dto);
         Task<Result<bool>> UpdateAsync(UpdateTrackDto dto);
         Task<Result<bool>> DeleteAsync(int id);
         Task<Result<PagedResponse<TrackDto>>> GetAllAsync(GetAllTrackDto dto);
         Task<Result<TrackDto>> GetByIdAsync(int id);
+        Task<bool> IsExistsTrackAsync(string title, string albumName);
     }
 }

@@ -20,8 +20,13 @@ namespace Server.Services.Entities
             _mapper = mapper;
         }
 
-        public async Task<Result<bool>> AddAsync(CreateMovieDto dto)
+        public async Task<Result<int>> AddAsync(CreateMovieDto dto)
         {
+            if (await _unitOfWork.Movies.IsExistMovieAsync(dto.Title, dto.ReleaseYear))
+            {
+                return Result<int>.Fail(Error.NotFound($"Movie with title: {dto.Title} and release year: {dto.ReleaseYear} already exist"));
+            }
+
             var movie = _mapper.Map<MovieEntity>(dto);
 
             movie.Type = Shared.Enums.MediaType.Movie;
@@ -35,7 +40,7 @@ namespace Server.Services.Entities
             await _unitOfWork.Movies.AddAsync(movie);
             await _unitOfWork.SaveAsync();
 
-            return Result<bool>.Success(true);
+            return Result<int>.Success(movie.Id);
         }
 
         public async Task<Result<bool>> DeleteAsync(int id)
@@ -87,8 +92,18 @@ namespace Server.Services.Entities
             return Result<MovieDto>.Success(movieDto);
         }
 
+        public async Task<bool> IsExistsMovieAsync(string title, int year)
+        {
+            return await _unitOfWork.Movies.IsExistMovieAsync(title, year);
+        }
+
         public async Task<Result<bool>> UpdateAsync(UpdateMovieDto dto)
         {
+            if (dto.Title != null && dto.ReleaseYear != null && await _unitOfWork.Movies.IsExistMovieAsync(dto.Title, dto.ReleaseYear.Value))
+            {
+                return Result<bool>.Fail(Error.NotFound($"Movie with title: {dto.Title} and release year: {dto.ReleaseYear} already exist"));
+            }
+
             var movie = await _unitOfWork.Movies.GetByIdAsync(dto.Id, includes: m => m.Genres);
 
             if (movie == null)

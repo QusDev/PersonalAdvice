@@ -20,11 +20,11 @@ namespace Server.Services.Entities
             _mapper = mapper;
         }
 
-        public async Task<Result<bool>> AddAsync(CreatePeopleDto dto)
+        public async Task<Result<int>> AddAsync(CreatePeopleDto dto)
         {
             if (await _unitOfWork.People.IsExistByFullNameAsync(dto.FullName))
             {
-                return Result<bool>.Fail(Error.Conflict($"Person with fullName: {dto.FullName} already exists"));
+                return Result<int>.Fail(Error.Conflict($"Person with fullName: {dto.FullName} already exists"));
             }
 
             var person = _mapper.Map<PeopleEntity>(dto);
@@ -32,7 +32,7 @@ namespace Server.Services.Entities
             await _unitOfWork.People.AddAsync(person);
             await _unitOfWork.SaveAsync();
 
-            return Result<bool>.Success(true);
+            return Result<int>.Success(person.Id);
         }
 
         public async Task<Result<bool>> DeleteAsync(int id)
@@ -55,6 +55,20 @@ namespace Server.Services.Entities
             var people = await _unitOfWork.People.GetAllAsync(pageNumber: dto.PageNumber, pageSize: dto.PageSize);
             var result = _mapper.Map<PagedResponse<PeopleDto>>(people);
             return Result<PagedResponse<PeopleDto>>.Success(result);
+        }
+
+        public async Task<Result<PeopleDto>> GetByFullNameAsync(string fullName)
+        {
+            var person = await _unitOfWork.People.GetByFullNameAsync(fullName);
+
+            if (person == null)
+            {
+                return Result<PeopleDto>.Fail(Error.NotFound($"Person with full name: {fullName} not found"));
+            }
+
+            var result = _mapper.Map<PeopleDto>(person);
+
+            return Result<PeopleDto>.Success(result);
         }
 
         public async Task<Result<PeopleDto>> GetByIdAsync(int id)
