@@ -1,0 +1,95 @@
+﻿@page "/"
+
+<PageTitle>PersonalAdvice | Твій медіа-путівник</PageTitle>
+
+<div class="home-wrapper">
+    <section class="hero-section text-center d-flex align-items-center justify-content-center">
+        <div class="container py-5">
+            <h1 class="display-3 fw-bold text-white mb-3">
+                Відкрий світ <span class="text-primary">PersonalAdvice</span>
+            </h1>
+            <p class="lead text-white-50 mb-4 mx-auto" style="max-width: 700px;">
+                Твій персональний простір для пошуку найкращих фільмів та музичних треків.
+                Отримуй рекомендації, створюй власну бібліотеку та ділися відгуками.
+            </p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a href="recommendations" class="btn btn-primary btn-lg px-4 gap-3">
+                    <i class="bi bi-stars"></i> Спробувати рекомендації
+                </a>
+                <a href="catalog/movies" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-collection-play"></i> Перейти до каталогу
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section py-5">
+        <div class="container">
+            <div class="row g-4 py-5">
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon-badge mb-3">
+                        <i class="bi bi-search fs-2 text-primary"></i>
+                    </div>
+                    <h3 class="fw-semibold text-white">Розумний пошук</h3>
+                    <p class="text-light-emphasis">Знайди саме те, що відповідає твоєму настрою сьогодні, завдяки зручній системі фільтрації.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon-badge mb-3">
+                        <i class="bi bi-chat-heart fs-2 text-primary"></i>
+                    </div>
+                    <h3 class="fw-semibold text-white">Відгуки та оцінки</h3>
+                    <p class="text-light-emphasis">Залишай свої рецензії та переглядай думки інших користувачів про улюблені твори.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="feature-icon-badge mb-3">
+                        <i class="bi bi-shield-check fs-2 text-primary"></i>
+                    </div>
+                    <h3 class="fw-semibold text-white">Безпечний доступ</h3>
+                    <p class="text-light-emphasis">Твій акаунт захищений сучасними протоколами безпеки. Твої вподобання — тільки твоя справа.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    .home-wrapper {
+        background-color: #121212;
+        min-height: 100vh;
+        color: #fff;
+        overflow-x: hidden;
+    }
+
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=2059&ixlib=rb-4.0.3');
+        background-size: cover;
+        background-position: center;
+        min-height: 60vh;
+        border-radius: 0 0 2rem 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-icon-badge {
+        width: 70px;
+        height: 70px;
+        background: rgba(13, 110, 253, 0.1);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+    }
+
+    .col-md-4:hover .feature-icon-badge {
+        transform: scale(1.1);
+        background: rgba(13, 110, 253, 0.2);
+    }
+
+    .stats-section {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    h1, h2, h3 {
+        letter-spacing: -0.5px;
+    }
+</style>
