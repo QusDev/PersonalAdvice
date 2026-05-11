@@ -4,11 +4,10 @@ namespace Shared.DTOs.Movie
 {
     public class CreateMovieDto
     {
-        public string? Director { get; set; }
         [Required]
         public int DurationMinutes { get; set; }
         [Required]
-        public string VideoQuality { get; set; } = null!;
+        public bool Adult { get; set; }
 
         [Required]
         public string Title { get; set; } = null!;

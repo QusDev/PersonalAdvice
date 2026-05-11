@@ -11,6 +11,11 @@ namespace Server.Repositories
         {
         }
 
+        public async Task<PeopleEntity?> GetByFullNameAsync(string fullName)
+        {
+            return await _dbSet.FirstOrDefaultAsync(x => x.FullName == fullName);
+        }
+
         public async Task<bool> IsExistByFullNameAsync(string fullName)
         {
             return await _dbSet.AnyAsync(x => x.FullName == fullName);

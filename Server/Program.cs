@@ -10,6 +10,8 @@ using Server.Services.Entities;
 using Server.Services.Entities.Interfaces;
 using Server.Services.Identity;
 using Server.Services.Identity.Interfaces;
+using Server.Services.Tmdb;
+using Server.Services.Tmdb.Interfaces;
 using Server.UnitOfWork;
 using Shared.Constants;
 using System.Text;
@@ -99,8 +101,11 @@ builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>(
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<ITmdbService, TmdbService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(EntitiesMappingProfile).Assembly);
 #endregion

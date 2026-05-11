@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Data.DbContext;
@@ -11,9 +12,11 @@ using Server.Data.DbContext;
 namespace Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260510200710_DeleteDirectorOnMovie")]
+    partial class DeleteDirectorOnMovie
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -406,11 +409,12 @@ namespace Server.Migrations
                 {
                     b.HasBaseType("Server.Data.Entities.MediaContentEntity");
 
-                    b.Property<bool>("Adult")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("integer");
+
+                    b.Property<string>("VideoQuality")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.ToTable("Movies", (string)null);
                 });

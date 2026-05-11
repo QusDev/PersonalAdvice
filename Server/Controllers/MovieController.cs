@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
 using Server.Services.Entities.Interfaces;
+using Server.Services.Tmdb.Interfaces;
 using Shared.Constants;
 using Shared.DTOs.Movie;
 
@@ -12,10 +13,12 @@ namespace Server.Controllers
     public class MovieController : ControllerBase
     {
         private readonly IMovieService _movieService;
+        private readonly ITmdbService _tmdbService;
 
-        public MovieController(IMovieService movieService)
+        public MovieController(IMovieService movieService, ITmdbService tmdbService)
         {
             _movieService = movieService;
+            _tmdbService = tmdbService;
         }
 
         [HttpPost]
@@ -84,6 +87,23 @@ namespace Server.Controllers
             }
 
             return Ok(result.Value);
+        }
+
+        [HttpPost("import/popular")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1)
+        {
+            if (page < 1 || page > 500)
+                return BadRequest("The page number must be between 1 and 500");
+
+            var result = await _tmdbService.ImportPopularMoviesAsync(page);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok($"Import new movies: {result.Value}");
         }
     }
 }
