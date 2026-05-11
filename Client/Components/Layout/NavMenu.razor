@@ -1,30 +1,146 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Client</a>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+<style>
+
+    /* Активні посилання NavLink */
+    .nav-link.active {
+        color: var(--bs-primary) !important;
+        font-weight: 600;
+    }
+
+    .sidebar-container {
+        background-color: #1a1d20 !important; /* Трохи темніший за стандартний dark */
+        z-index: 1000;
+    }
+
+    /* Налаштування посилань */
+    .nav-pills .nav-link {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd !important; /* Ваш основний колір */
+        }
+
+    /* Стиль випадаючого підменю в Сайдбарі */
+    .nav-link ul li .nav-link {
+        font-size: 0.9rem;
+        padding-left: 10px;
+    }
+
+    .sidebar-dropdown .dropdown-content {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: all 0.3s ease-in-out;
+        pointer-events: none;
+    }
+
+    .sidebar-dropdown:hover .dropdown-content,
+    .sidebar-dropdown:focus-within .dropdown-content {
+        max-height: 200px;
+        opacity: 1;
+        margin-top: 0.5rem;
+        pointer-events: auto;
+        overflow: visible;
+    }
+
+    .sidebar-dropdown .arrow-icon {
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar-dropdown:hover .arrow-icon,
+    .sidebar-dropdown:focus-within .arrow-icon {
+        transform: rotate(180deg);
+    }
+
+    .sidebar-dropdown:focus {
+        outline: none;
+    }
+</style>
+
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark vh-100 sidebar-container shadow">
+    <!-- Логотип -->
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-4 fw-bold uppercase px-2">Personal<span class="text-primary">Advice</span></span>
+    </a>
+    <hr>
+
+    <!-- Основне меню -->
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item mb-1">
+            <NavLink class="nav-link align-items-center text-white gap-1" href="recommendations">
+                <i class="bi bi-stars me-0 d-flex fs-5"></i> Рекомендації
+            </NavLink>
+        </li>
+        
+        <li class="nav-item mb-1 sidebar-dropdown d-flex" tabindex="0">
+            <div class="nav-link text-white d-flex flex-column align-items-start">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-grid-3x3-gap d-flex me-0 fs-5"></i>
+                    <span>Каталог</span>
+                    <i class="bi-chevron-down d-flex me-0 ms-auto small arrow-icon"></i>
+                </div>
+        
+                <ul class="nav d-flex flex-column ms-3 small border-start border-secondary dropdown-content">
+                    <li class="nav-item">
+                        <NavLink class="nav-link text-white-50 py-1" href="catalog/movies">Фільми</NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink class="nav-link text-white-50 py-1" href="catalog/tracks">Треки</NavLink>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <li class="nav-item mt-3">
+                    <span class="text-uppercase px-3 text-muted" style="font-size: 0.7rem;">Адміністрування</span>
+                    <NavLink class="nav-link text-warning d-flex align-items-center gap-2" href="admin">
+                        <i class="bi bi-shield-lock"></i> Адмін панель
+                    </NavLink>
+                </li>
+            </Authorized>
+        </AuthorizeView>
+    </ul>
+    
+    <hr>
+
+    <!-- Блок користувача внизу -->
+    <div class="user-block">
+        <AuthorizeView>
+            <Authorized>
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle fs-4 me-2"></i>
+                        <div class="overflow-hidden">
+                            <strong class="d-block text-truncate" style="max-width: 150px;">@context.User.Identity?.Name</strong>
+                            <span class="small text-muted d-block text-truncate">@context.User.FindFirst(c => c.Type == "email")?.Value</span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                        <li><a class="dropdown-item" href="profile">Профіль</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="logout" method="post">
+                                <button type="submit" class="dropdown-item text-danger">Вийти</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="d-grid gap-2">
+                    <a href="login" class="btn btn-outline-primary btn-sm">Увійти</a>
+                    <a href="register" class="btn btn-primary btn-sm">Реєстрація</a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
