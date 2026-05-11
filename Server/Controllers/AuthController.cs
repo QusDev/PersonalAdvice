@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Server.Extensions;
 using Server.Services.Identity.Interfaces;
 using Shared.DTOs.Identity;
 
@@ -23,7 +24,7 @@ namespace Server.Controllers
 
             if (result.IsFailure)
             {
-                return BadRequest(result.Value);
+                return result.Failure!.ToResponse();
             }
 
             return Ok(result.Value);
@@ -36,7 +37,7 @@ namespace Server.Controllers
 
             if (result.IsFailure)
             {
-                return BadRequest(result.Value);
+                return result.Failure!.ToResponse();
             }
 
             return Ok(result.Value);
