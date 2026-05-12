@@ -6,6 +6,7 @@ namespace Server.Services.Entities.Interfaces
 {
     public interface IMediaService
     {
-        Task<Result<PagedResponse<SearchMediaItemDto>>> SearchMediaAsync(SearchMediaDto dto);
+        Task<Result<PagedResponse<MediaCardDto>>> SearchMediaAsync(SearchMediaDto dto);
+        Task<Result<PagedResponse<MediaCardDto>>> CatalogMediaAsync(CatalogMediaDto dto);
     }
 }

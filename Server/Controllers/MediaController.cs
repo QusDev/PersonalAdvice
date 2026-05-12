@@ -28,5 +28,18 @@ namespace Server.Controllers
 
             return Ok(result.Value);
         }
+
+        [HttpGet("catalog")]
+        public async Task<IActionResult> Catalog([FromQuery] CatalogMediaDto dto)
+        {
+            var result = await _mediaService.CatalogMediaAsync(dto);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok(result.Value);
+        }
     }
 }

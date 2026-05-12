@@ -5,7 +5,6 @@ using Shared;
 using Shared.DTOs.Entities;
 using Shared.DTOs.MediaContent;
 using Shared.DTOs.Repositories;
-using Shared.Enums;
 
 namespace Server.Services.Entities
 {
@@ -20,7 +19,14 @@ namespace Server.Services.Entities
             _mapper = mapper;
         }
 
-        public async Task<Result<PagedResponse<SearchMediaItemDto>>> SearchMediaAsync(SearchMediaDto dto)
+        public async Task<Result<PagedResponse<MediaCardDto>>> CatalogMediaAsync(CatalogMediaDto dto)
+        {
+            var medias = await _unitOfWork.MediaContent.GetFiltered(dto);
+            var result = _mapper.Map<PagedResponse<MediaCardDto>>(medias);
+            return Result<PagedResponse<MediaCardDto>>.Success(result);
+        }
+
+        public async Task<Result<PagedResponse<MediaCardDto>>> SearchMediaAsync(SearchMediaDto dto)
         {
             var medias = await _unitOfWork.MediaContent.GetAllAsync(
                 filter: m => m.Title.Contains(dto.Title),
@@ -31,7 +37,7 @@ namespace Server.Services.Entities
                     m => m.MediaCollaborators,
                     ]);
 
-            var result = _mapper.Map<PagedResponse<SearchMediaItemDto>>(medias);
+            var result = _mapper.Map<PagedResponse<MediaCardDto>>(medias);
 
             if (result.Items.Any())
             {
@@ -43,21 +49,8 @@ namespace Server.Services.Entities
                     }
                 }
             }
-            //selector: m => new SearchMediatemDto()
-            //{
-            //    Id = m.Id,
-            //    Title = m.Title,
-            //    PhotoUrl = m.PhotoUrl,
-            //    AverageRating = m.AverageRating,
-            //    Type = m.Type,
-            //    Genres = _mapper.Map<List<GenreDto>>(m.Genres.ToList()),
-            //    Author = _mapper.Map<MediaCollaboratorDto>(
-            //        m.Type == MediaType.Movie ? 
-            //        m.MediaCollaborators.Where(mc => mc.Role == "Director") :
-            //        m.MediaCollaborators.Where(mc => mc.Role == "Artist"))
-            //});
 
-            return Result<PagedResponse<SearchMediaItemDto>>.Success(result);
+            return Result<PagedResponse<MediaCardDto>>.Success(result);
         }
     }
 }

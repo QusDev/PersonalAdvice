@@ -10,12 +10,12 @@ namespace Server.Mapping
     {
         public MediaContentMappingProfile()
         {
-            CreateMap<MediaContentEntity, SearchMediaItemDto>()
+            CreateMap<MediaContentEntity, MediaCardDto>()
                 .ForMember(dest => dest.Author, opt => opt.MapFrom(src =>
                 src.Type == MediaType.Movie
                     ? src.MediaCollaborators.FirstOrDefault(mc => mc.Role == "Director")
                     : src.MediaCollaborators.FirstOrDefault(mc => mc.Role == "Artist")));
-            CreateMap<PagedResponse<MediaContentEntity>, PagedResponse<SearchMediaItemDto>>();
+            CreateMap<PagedResponse<MediaContentEntity>, PagedResponse<MediaCardDto>>();
         }
     }
 }

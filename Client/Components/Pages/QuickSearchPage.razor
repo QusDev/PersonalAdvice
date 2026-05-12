@@ -217,7 +217,7 @@
 @code {
     private string SearchQuery { get; set; } = "";
     private bool _isSearching;
-    private List<SearchMediaItemDto> _searchResults = new();
+    private List<MediaCardDto> _searchResults = new();
 
     private int _currentPage = 1;
     private int _pageSize = 6;
@@ -257,7 +257,7 @@
         {
             var url = $"{options.Value.BackendApiBaseUrl}/media/search?title={SearchQuery}&page={_currentPage}&pageSize={_pageSize}";
 
-            var response = await httpClient.GetFromJsonAsync<PagedResponse<SearchMediaItemDto>>(url);
+            var response = await httpClient.GetFromJsonAsync<PagedResponse<MediaCardDto>>(url);
             _searchResults = response!.Items.ToList();
             _totalPages = response.TotalPages;
         }
