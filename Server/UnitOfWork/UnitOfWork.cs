@@ -15,7 +15,7 @@ namespace Server.UnitOfWork
         private IRatingRepository? _ratings;
         private IUserInteractionRepository? _userInteractions;
         private IMediaCollaboratorRepository? _mediaCollaborators;
-        private IGenericRepository<MediaContentEntity>? _mediaContent;
+        private IMediaRepository? _mediaContent;
 
         public UnitOfWork(ApplicationDbContext context)
         {
@@ -36,7 +36,7 @@ namespace Server.UnitOfWork
 
         public IMediaCollaboratorRepository MediaCollaborators => _mediaCollaborators ??= new MediaCollaboratorRepository(_context);
 
-        public IGenericRepository<MediaContentEntity> MediaContent => _mediaContent ??= new GenericRepository<MediaContentEntity>(_context);
+        public IMediaRepository MediaContent => _mediaContent ??= new MediaRepository(_context);
 
         public void Dispose()
         {

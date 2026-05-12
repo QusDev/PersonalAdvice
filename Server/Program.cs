@@ -102,6 +102,7 @@ builder.Services.AddScoped<IMediaCollaboratorService, MediaCollaboratorService>(
 builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 builder.Services.AddScoped<ITmdbService, TmdbService>();
 builder.Services.AddScoped<IJamendoService, JamendoService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

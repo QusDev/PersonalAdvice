@@ -16,7 +16,7 @@ namespace Server.Data.EntityConfigurations
                 .HasForeignKey(x => x.MediaId);
 
             builder
-                .HasOne(x => x.People)
+                .HasOne(x => x.Person)
                 .WithMany(x => x.MediaCollaborators)
                 .HasForeignKey(x => x.PersonId);
         }

@@ -80,13 +80,18 @@ namespace Server.Services.Entities
                 includes:
                 [
                     m => m.Genres,
-                    m => m.MediaCollaborators,
                 ]);
 
             if (movie == null)
             {
                 return Result<MovieDto>.Fail(Error.NotFound($"Movie with id: {id} not found"));
             }
+
+            movie.MediaCollaborators = (await _unitOfWork.MediaCollaborators.GetAllAsync(
+                filter: md => md.MediaId == movie.Id,
+                includes: md => md.Person,
+                pageNumber: 1,
+                pageSize: 15)).Items.ToList();
 
             var movieDto = _mapper.Map<MovieDto>(movie);
             return Result<MovieDto>.Success(movieDto);

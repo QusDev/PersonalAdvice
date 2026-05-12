@@ -13,7 +13,7 @@ namespace Server.UnitOfWork
         IRatingRepository Ratings { get; }
         IUserInteractionRepository UserInteractions { get; }
         IMediaCollaboratorRepository MediaCollaborators { get; }
-        IGenericRepository<MediaContentEntity> MediaContent { get; }
+        IMediaRepository MediaContent { get; }
 
         Task<int> SaveAsync();
     }

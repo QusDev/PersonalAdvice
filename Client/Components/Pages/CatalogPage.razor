@@ -1,0 +1,232 @@
+﻿@page "/catalog"
+@rendermode InteractiveServer
+
+@using Client.Constant
+@using Microsoft.Extensions.Options
+@using Shared.DTOs.Entities
+@using Shared.DTOs.MediaContent
+@using Shared.DTOs.Repositories
+@using Shared.Enums
+
+@inject HttpClient httpClient
+@inject IOptions<ApiSettings> options
+@inject NavigationManager Nav
+
+<style>
+    .item-card {
+        cursor: pointer;
+        transition: transform 0.2s, shadow 0.2s;
+    }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .page-link {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 1rem;
+    }
+</style>
+
+<div class="container py-4">
+    <h2 class="fw-bold text-dark mb-4 border-bottom pb-2">Каталог медіа</h2>
+
+    <div class="card border-0 shadow-sm filter-section p-4 mb-5">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted text-uppercase">Назва</label>
+                <div class="input-group shadow-sm rounded-3 overflow-hidden">
+                    <span class="input-group-text border-0 bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-0" @bind="_filters.SearchTitle" placeholder="Назва фільму чи треку..." />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted text-uppercase">Тип</label>
+                <select class="form-select border-0 shadow-sm rounded-3" @bind="mediaTypeInt">
+                    <option value="0">Всі типи</option>
+                    <option value="1">Фільми</option>
+                    <option value="2">Треки</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted text-uppercase">Рік (Від - До)</label>
+                <div class="d-flex gap-2">
+                    <input type="number" class="form-control border-0 shadow-sm rounded-3" @bind="_filters.YearFrom" placeholder="2000" />
+                    <input type="number" class="form-control border-0 shadow-sm rounded-3" @bind="_filters.YearTo" placeholder="2026" />
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted text-uppercase">Рейтинг</label>
+                <div class="d-flex gap-2">
+                    <input type="number" step="0.1" class="form-control border-0 shadow-sm rounded-3" @bind="_filters.RatingFrom" placeholder="0.0" />
+                    <input type="number" step="0.1" class="form-control border-0 shadow-sm rounded-3" @bind="_filters.RatingTo" placeholder="10" />
+                </div>
+            </div>
+
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary rounded-pill px-4 shadow w-100" @onclick="ApplyFilters">
+                    <i class="bi bi-funnel-fill me-2"></i>Пошук
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill px-3 w-50" @onclick="ResetFilters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_items == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">Завантаження контенту...</p>
+        </div>
+    }
+    else if (!_items.Any())
+    {
+        <div class="alert alert-info rounded-4 border-0 shadow-sm text-center py-4">
+            <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+            За вашим запитом нічого не знайдено. Спробуйте змінити фільтри.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in _items)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card"
+                    @onclick='() => NavigateToDetails(item)'>
+                        <div class="position-relative">
+                            <img src="@item.PhotoUrl" class="card-img-top" alt="@item.Title" style="height: 280px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-white text-dark shadow-sm px-2 py-1">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>@item.AverageRating.ToString("0.0")
+                                </span>
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge @(item.Type == MediaType.Movie ? "bg-primary" : "bg-success") shadow-sm">
+                                    <i class="bi @(item.Type == MediaType.Movie ? "bi-film" : "bi-music-note-beamed") me-1"></i>
+                                    @(item.Type == MediaType.Movie ? "Фільм" : "Трек")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-dark text-truncate mb-1">@item.Title</h6>
+                            <p class="card-text text-secondary small mb-2">
+                                <i class="bi bi-calendar3 me-1"></i> @item.ReleaseYear
+                            </p>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var genre in item.Genres.Take(2))
+                                {
+                                    <span class="badge bg-light text-primary border-0 small" style="font-size: 0.75rem;">@genre.Name</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (_totalPages > 1)
+        {
+            <nav class="mt-5 mb-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(!_hasPrevious ? "disabled" : "")">
+                        <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => ChangePage(_currentPage - 1)"
+                        disabled="@(!_hasPrevious)">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                    </li>
+
+                    @for (int i = 1; i <= _totalPages; i++)
+                    {
+                        var pageNum = i;
+                        <li class="page-item @(_currentPage == pageNum ? "active" : "")">
+                            <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == pageNum ? "bg-primary text-white" : "text-dark")"
+                            @onclick="() => ChangePage(pageNum)">
+                                @pageNum
+                            </button>
+                        </li>
+                    }
+
+                    <li class="page-item @(!_hasNext ? "disabled" : "")">
+                        <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => ChangePage(_currentPage + 1)"
+                        disabled="@(!_hasNext)">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+                <div class="text-center text-muted small mt-2">
+                    Показано сторінку @_currentPage з @_totalPages (Всього: @_totalCount)
+                </div>
+            </nav>
+        }
+    }
+</div>
+
+@code {
+    private List<MediaCardDto>? _items;
+    private FilterMediaDto _filters = new();
+
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious;
+    private bool _hasNext;
+
+    private const int pageSize = 12;
+    private int mediaTypeInt = 0;
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        _items = null;
+        var queryParams = new List<string> { $"pageNumber={_currentPage}", $"pageSize={pageSize}" };
+
+        if (!string.IsNullOrEmpty(_filters.SearchTitle)) queryParams.Add($"searchTitle={Uri.EscapeDataString(_filters.SearchTitle)}");
+        if (mediaTypeInt != 0) queryParams.Add($"type={((MediaType)mediaTypeInt)}");
+        if (_filters.Type.HasValue) queryParams.Add($"type={_filters.Type}");
+        if (_filters.YearFrom.HasValue) queryParams.Add($"yearFrom={_filters.YearFrom}");
+        if (_filters.YearTo.HasValue) queryParams.Add($"yearTo={_filters.YearTo}");
+        if (_filters.RatingFrom.HasValue) queryParams.Add($"ratingFrom={_filters.RatingFrom}");
+        if (_filters.RatingTo.HasValue) queryParams.Add($"ratingTo={_filters.RatingTo}");
+
+        var url = $"{options.Value.BackendApiBaseUrl}/media/catalog?{string.Join("&", queryParams)}";
+        var response = await httpClient.GetFromJsonAsync<PagedResponse<MediaCardDto>>(url);
+
+        if (response != null)
+        {
+            _items = response.Items.ToList();
+            _currentPage = response.PageNumber;
+            _totalPages = response.TotalPages;
+            _totalCount = response.TotalCount;
+            _hasPrevious = response.HasPrevious;
+            _hasNext = response.HasNext;
+        }
+    }
+
+    private async Task ApplyFilters() { _currentPage = 1; await LoadData(); }
+    private async Task ResetFilters() { _filters = new(); _currentPage = 1; await LoadData(); }
+    private async Task ChangePage(int newPage) { if (newPage >= 1 && newPage <= _totalPages) { _currentPage = newPage; await LoadData(); } }
+    private void NavigateToDetails(MediaCardDto item)
+    {
+        var entity = item.Type == MediaType.Movie ? "movies" : "tracks";
+        Nav.NavigateTo($"/{entity}/{item.Id}");
+        
+    }
+}

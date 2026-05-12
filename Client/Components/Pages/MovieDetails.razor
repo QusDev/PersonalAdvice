@@ -1,0 +1,156 @@
+﻿@page "/movies/{Id:int}"
+@rendermode InteractiveServer
+
+@using Client.Constant
+@using Microsoft.Extensions.Options
+@using Shared.DTOs.Entities
+@inject HttpClient httpClient
+@inject IOptions<ApiSettings> options
+
+<style>
+    body {
+        background-color: #ffffff;
+        color: #212529;
+    }
+
+    .actor-tag {
+        background-color: #fff;
+        color: #495057;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+        .actor-tag:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            border-color: #0d6efd !important;
+        }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: #adb5bd;
+    }
+
+    .text-secondary {
+        color: #6c757d !important;
+    }
+</style>
+
+<div class="container py-5">
+    @if (_movie == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-secondary">Завантаження фільму...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-5">
+            <div class="col-md-4">
+                <div class="position-relative shadow-lg rounded-4 overflow-hidden border-0">
+                    <img src="@_movie.PhotoUrl" class="img-fluid w-100" alt="@_movie.Title" style="min-height: 450px; object-fit: cover;">
+                    
+                    @if (_movie.Adult)
+                    {
+                        <div class="position-absolute top-0 start-0 m-3 badge bg-danger p-2 shadow-sm">18+</div>
+                    }
+                    
+                    <div class="position-absolute bottom-0 end-0 m-3 badge bg-white p-2 shadow border d-flex align-items-center">
+                        <i class="bi bi-star-fill d-flex text-warning me-1"></i>
+                        <span class="fs-5 text-dark fw-bold">@_movie.AverageRating.ToString("0.0")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="catalog" class="text-decoration-none text-primary">Каталог</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Фільм</li>
+                    </ol>
+                </nav>
+
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">@_movie.ReleaseYear</span>
+                    <span class="text-secondary small fw-medium">
+                        <i class="bi bi-clock me-1"></i> @FormatDuration(_movie.DurationMinutes)
+                    </span>
+                </div>
+                
+                <h1 class="display-4 fw-bold text-dark mb-3">@_movie.Title</h1>
+                
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @foreach (var genre in _movie.Genres)
+                    {
+                        <span class="badge rounded-pill border border-primary text-primary bg-white px-3">@genre.Name</span>
+                    }
+                </div>
+
+                <div class="mb-4 p-4 rounded-4 bg-light border-0 shadow-sm">
+                    <h5 class="text-dark fw-bold mb-3"><i class="bi bi-justify-left me-2 text-primary"></i>Сюжет</h5>
+                    <p class="text-secondary" style="font-size: 1.1rem; line-height: 1.7;">@_movie.Description</p>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-12">
+                        <h6 class="text-muted text-uppercase fw-bold small mb-2">Режисери</h6>
+                        <p class="text-dark fs-5 fw-medium">@GetCollaboratorsByRole("Director")</p>
+                    </div>
+
+                    <div class="col-12">
+                        <h6 class="text-muted text-uppercase fw-bold small mb-2">Акторський склад</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach (var actor in _movie.MediaCollaborators.Where(md => md.Role != "Director"))
+                            {
+                                <span class="actor-tag shadow-sm border">
+                                    <i class="bi bi-person text-primary me-2"></i> @actor.Person.FullName
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @* <div class="mt-5 d-flex gap-3">
+                    <button class="btn btn-primary btn-lg rounded-pill px-5 shadow">
+                        <i class="bi bi-play-fill me-1"></i> Дивитися зараз
+                    </button>
+                    <button class="btn btn-outline-secondary btn-lg rounded-pill px-4">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div> *@
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private MovieDto? _movie;
+
+    protected override async Task OnInitializedAsync() =>
+        _movie = await httpClient.GetFromJsonAsync<MovieDto>($"{options.Value.BackendApiBaseUrl}/movies/{Id}");
+
+    private string FormatDuration(double minutes)
+    {
+        var hours = (int)minutes / 60;
+        var mins = (int)minutes % 60;
+        return hours > 0 ? $"{hours}г {mins}хв" : $"{mins}хв";
+    }
+
+    private string GetCollaboratorsByRole(string role)
+    {
+        var list = _movie?.MediaCollaborators
+            .Where(c => c.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Person.FullName).ToList();
+            
+        return list != null && list.Any() ? string.Join(", ", list) : "Не вказано";
+    }
+}

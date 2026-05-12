@@ -5,65 +5,24 @@
 
 <style>
     .nav-link.active {
-        color: var(--bs-primary-emphasis) !important;
         font-weight: 600;
+        background-color: rgba(13, 110, 253, 0.1);
     }
 
     .sidebar-container {
         background-color: #1a1d20 !important;
         z-index: 1000;
-        display: flex;
-        flex-direction: column;
     }
 
     .nav-pills .nav-link {
         border-radius: 8px;
         transition: all 0.2s ease;
         margin-bottom: 4px;
-        cursor: pointer;
     }
 
         .nav-pills .nav-link:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
-
-    .dropdown-content {
-        max-height: 0;
-        overflow: hidden;
-        list-style: none;
-        padding-left: 1rem;
-        margin: 0;
-        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                    opacity 0.3s ease;
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .sidebar-dropdown:hover .dropdown-content,
-    .sidebar-dropdown:focus-within .dropdown-content {
-        max-height: 200px;
-        opacity: 1;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-        pointer-events: auto;
-    }
-
-    .arrow-icon {
-        transition: transform 0.3s ease;
-    }
-
-    .sidebar-dropdown:hover .arrow-icon {
-        transform: rotate(180deg);
-    }
-
-    .dropdown-content .nav-link {
-        transform: translateX(-10px);
-        transition: transform 0.3s ease;
-    }
-
-    .sidebar-dropdown:hover .dropdown-content .nav-link {
-        transform: translateX(0);
-    }
 
     .user-card {
         background: rgba(255, 255, 255, 0.05);
@@ -111,16 +70,18 @@
             </NavLink>
         </li>
         
-        <li class="nav-item mb-1 sidebar-dropdown" tabindex="0">
-            <div class="nav-link text-white d-flex align-items-center gap-2">
-                <i class="bi bi-grid-3x3-gap d-flex me-0 fs-5"></i>
+        <li class="nav-item mb-1">
+            <NavLink class="nav-link align-items-center text-white d-flex gap-2" href="catalog">
+                <i class="bi bi-grid-3x3-gap fs-5 d-flex me-0 fs-5"></i>
                 <span>Каталог</span>
-                <i class="bi-chevron-down ms-auto small arrow-icon d-flex me-0"></i>
-            </div>
-            <ul class="dropdown-content border-start border-secondary ms-3">
-                <li><NavLink class="nav-link text-white-50 py-1" href="catalog/movies">Фільми</NavLink></li>
-                <li><NavLink class="nav-link text-white-50 py-1" href="catalog/tracks">Треки</NavLink></li>
-            </ul>
+            </NavLink>
+        </li>
+
+        <li class="nav-item mb-1">
+            <NavLink class="nav-link align-items-center text-white d-flex gap-2" href="quick-search">
+                <i class="bi bi-search-heart d-flex me-0 fs-5 text-info"></i>
+                <span>Швидкий пошук</span>
+            </NavLink>
         </li>
 
         <AuthorizeView Roles="Admin">
