@@ -83,6 +83,12 @@ namespace Server.Services.Entities
                 return Result<TrackDto>.Fail(Error.NotFound($"Track with id: {id} not found"));
             }
 
+            track.MediaCollaborators = (await _unitOfWork.MediaCollaborators.GetAllAsync(
+                filter: md => md.MediaId == track.Id,
+                includes: md => md.Person,
+                pageNumber: 1,
+                pageSize: 15)).Items.ToList();
+
             var trackDto = _mapper.Map<TrackDto>(track);
             return Result<TrackDto>.Success(trackDto);
         }

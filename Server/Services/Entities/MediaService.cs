@@ -33,11 +33,16 @@ namespace Server.Services.Entities
 
             var result = _mapper.Map<PagedResponse<SearchMediaItemDto>>(medias);
 
-            foreach (var item in result.Items)
+            if (result.Items.Any())
             {
-                item.Author.Person = _mapper.Map<PeopleDto>(await _unitOfWork.People.GetByIdAsync(item.Author.PersonId));
+                foreach (var item in result.Items)
+                {
+                    if (item.Author != null)
+                    {
+                        item.Author.Person = _mapper.Map<PeopleDto>(await _unitOfWork.People.GetByIdAsync(item.Author.PersonId));
+                    }
+                }
             }
-
             //selector: m => new SearchMediatemDto()
             //{
             //    Id = m.Id,

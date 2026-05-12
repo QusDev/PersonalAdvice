@@ -1,0 +1,149 @@
+﻿@page "/tracks/{Id:int}"
+@rendermode InteractiveServer
+
+@using Client.Constant
+@using Microsoft.Extensions.Options
+@using Shared.DTOs.Entities
+
+@inject HttpClient httpClient
+@inject IOptions<ApiSettings> options
+
+<style>
+    .lyrics-box {
+        white-space: pre-line;
+        line-height: 2;
+        font-size: 1.15rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-family: 'Georgia', serif;
+        font-style: italic;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+    
+    lyrics-content {
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 15px;
+    }
+
+    .lyrics-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .lyrics-content::-webkit-scrollbar-thumb {
+        background: #198754;
+        border-radius: 10px;
+    }
+
+    audio::-webkit-media-controls-panel {
+        background-color: #212529;
+    }
+
+    audio::-webkit-media-controls-current-time-display,
+    audio::-webkit-media-controls-time-remaining-display {
+        color: #ffffff;
+    }
+</style>
+
+<div class="container py-5">
+    @if (_track == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-grow text-success" role="status"></div>
+        </div>
+    }
+    else
+    {
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="catalog" class="text-decoration-none text-success fw-medium">
+                        <i class="bi bi-arrow-left me-1"></i>Назад до каталогу
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Трек</li>
+            </ol>
+        </nav>
+
+        <div class="card bg-dark border-secondary shadow-lg rounded-4 overflow-hidden mb-5">
+            <div class="row g-0">
+                <div class="col-md-5 bg-black">
+                    <img src="@_track.PhotoUrl" class="img-fluid w-100 h-100 object-fit-cover" alt="@_track.Title">
+                </div>
+                <div class="col-md-7 p-4 p-lg-5 text-white position-relative">
+                    <div class="mb-3 d-flex align-items-center gap-2">
+                        <span class="badge bg-success px-3">Альбом: @_track.AlbumName</span>
+                        <span class="text-muted small">@_track.ReleaseYear</span>
+                    </div>
+                    
+                    <h1 class="display-5 fw-bold mb-1">@_track.Title</h1>
+                    <h3 class="text-success fw-light mb-4">@GetCollaboratorsByRole("Artist")</h3>
+
+                    @if (!string.IsNullOrEmpty(_track.AudioUrl))
+                    {
+                        <div class="audio-player mb-4 p-3 bg-black bg-opacity-50 rounded-4 border border-secondary shadow-sm">
+                            <div class="small text-white-50 mb-2"><i class="bi bi-play-circle me-1"></i> Pre-listen</div>
+                            <audio controls class="w-100">
+                                <source src="@_track.AudioUrl" type="audio/mpeg">
+                            </audio>
+                        </div>
+                    }
+
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-4 border-end border-secondary">
+                            <div class="text-white-50 small">Рейтинг</div>
+                            <div class="text-warning fw-bold fs-5">@_track.AverageRating.ToString("0.0")</div>
+                        </div>
+                        <div class="col-4 border-end border-secondary">
+                            <div class="text-white-50 small">Тривалість</div>
+                            <div class="text-white fw-bold fs-5">@FormatDuration(_track.DurationMinutes)</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-white-50 small">Жанр</div>
+                            <div class="text-white fw-bold fs-5">@(_track.Genres.FirstOrDefault()?.Name ?? "N/A")</div>
+                        </div>
+                    </div>
+
+                    @* <div class="d-flex gap-3 mt-4">
+                        <button class="btn btn-outline-light btn-lg rounded-pill px-4">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div> *@
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_track.Lyrics))
+        {
+            <div class="lyrics-card p-5 bg-dark border border-secondary rounded-4 shadow">
+                <div class="d-flex align-items-center gap-3 mb-4 border-bottom border-secondary pb-3">
+                    <i class="bi bi-chat-quote fs-3 text-success"></i>
+                    <h4 class="mb-0 text-info">Текст пісні</h4>
+                </div>
+                <div class="lyrics-box">
+                    @_track.Lyrics
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private TrackDto? _track;
+
+    protected override async Task OnInitializedAsync() =>
+        _track = await httpClient.GetFromJsonAsync<TrackDto>($"{options.Value.BackendApiBaseUrl}/tracks/{Id}");
+
+    private string FormatDuration(double minutes)
+    {
+        var m = (int)minutes;
+        var s = (int)((minutes - m) * 60);
+        return $"{m}:{s:D2}";
+    }
+
+    private string GetCollaboratorsByRole(string role) =>
+        string.Join(", ", _track?.MediaCollaborators
+            .Where(c => c.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
+            .Select(c => c.Person.FullName) ?? new[] { "Невідомий виконавець" });
+}

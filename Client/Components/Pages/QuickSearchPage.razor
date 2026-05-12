@@ -147,9 +147,12 @@
                                     </div>
 
                                     <!-- Колаборатори (Director/Artist) -->
-                                    <p class="card-text text-info mb-2 small fw-medium">
-                                        @item.Author.Person.FullName
-                                    </p>
+                                    @if (item.Author != null)
+                                    {
+                                        <p class="card-text text-info mb-2 small fw-medium">
+                                            @item.Author.Person.FullName
+                                        </p>
+                                    }
 
                                     <!-- Жанри -->
                                     <div class="mb-3">
