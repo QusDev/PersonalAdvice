@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
-using Server.Services.Entities;
 using Server.Services.Entities.Interfaces;
 using Shared.Constants;
-using Shared.DTOs.Genres;
 using Shared.DTOs.MediaCollaborator;
 
 namespace Server.Controllers
