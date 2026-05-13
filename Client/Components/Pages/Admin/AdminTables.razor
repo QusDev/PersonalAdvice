@@ -2,12 +2,12 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = Role.Admin)]
 @using Client.Components.Pages.Admin.Genres
+@using Client.Components.Pages.Admin.Tracks
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Constants
 
 
 <div class="container-fluid mt-4 px-4">
-    <!-- Хлібні крихти для зручної навігації -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/admin" class="text-decoration-none text-muted">Панель керування</a></li>
@@ -16,11 +16,10 @@
     </nav>
 
     <div class="row">
-        <!-- Бокове або верхнє меню вибору таблиці -->
         <div class="col-12 mb-4">
             <div class="d-flex gap-2 p-2 bg-light rounded-4 shadow-sm overflow-auto">
-                <button class="btn @GetTabClass("books")" @onclick='() => SetTab("books")'>
-                    <i class="bi bi-book me-2"></i>Книги
+                <button class="btn @GetTabClass("tracks")" @onclick='() => SetTab("tracks")'>
+                    <i class="bi bi-book me-2"></i>Треки
                 </button>
                 <button class="btn @GetTabClass("authors")" @onclick='() => SetTab("authors")'>
                     <i class="bi bi-person-badge me-2"></i>Автори
@@ -34,14 +33,13 @@
             </div>
         </div>
 
-        <!-- Основний контент таблиці -->
         <div class="col-12">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-0">
                     @switch (activeTable)
                     {
-                        case "books":
-                            <div class="p-5 text-center text-muted">Таблиця Жанрів (в розробці)</div>
+                        case "tracks":
+                            <AdminTracksTable/>
                             break;
                         case "authors":
                             <div class="p-5 text-center text-muted">Таблиця Жанрів (в розробці)</div>
@@ -60,7 +58,7 @@
 </div>
 
 @code {
-    private string activeTable = "books";
+    private string activeTable = "tracks";
 
     private void SetTab(string tableName) => activeTable = tableName;
 

@@ -1,0 +1,99 @@
+﻿<style>
+    .page-link {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .page-link:focus { box-shadow: none; }
+    .page-item.active .page-link { z-index: 1; }
+</style>
+
+@if (TotalPages > 1)
+{
+    <nav class="mt-4 mb-4">
+        <ul class="pagination justify-content-center align-items-center">
+            @* Кнопка Назад *@
+            <li class="page-item @(!HasPrevious ? "disabled" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)"
+                        disabled="@(!HasPrevious)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>
+
+            @* Перша сторінка *@
+            <li class="page-item @(CurrentPage == 1 ? "active" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(CurrentPage == 1 ? "bg-primary text-white" : "text-dark")"
+                        @onclick="() => OnPageChanged.InvokeAsync(1)">
+                    1
+                </button>
+            </li>
+
+            @* Трікрапка зліва *@
+            @if (CurrentPage > 3)
+            {
+                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+            }
+
+            @* Середні сторінки *@
+            @for (int i = Math.Max(2, CurrentPage - 1); i <= Math.Min(TotalPages - 1, CurrentPage + 1); i++)
+            {
+                var pageNum = i;
+                <li class="page-item @(CurrentPage == pageNum ? "active" : "")">
+                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(CurrentPage == pageNum ? "bg-primary text-white" : "text-dark")"
+                            @onclick="() => OnPageChanged.InvokeAsync(pageNum)">
+                        @pageNum
+                    </button>
+                </li>
+            }
+
+            @* Трікрапка справа *@
+            @if (CurrentPage < TotalPages - 2)
+            {
+                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+            }
+
+            @* Остання сторінка *@
+            @if (TotalPages > 1)
+            {
+                <li class="page-item @(CurrentPage == TotalPages ? "active" : "")">
+                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(CurrentPage == TotalPages ? "bg-primary text-white" : "text-dark")"
+                            @onclick="() => OnPageChanged.InvokeAsync(TotalPages)">
+                        @TotalPages
+                    </button>
+                </li>
+            }
+
+            @* Кнопка Вперед *@
+            <li class="page-item @(!HasNext ? "disabled" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)"
+                        disabled="@(!HasNext)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+        </ul>
+        
+        @if (ShowSummary)
+        {
+            <div class="text-center text-muted small mt-2">
+                Сторінка @CurrentPage з @TotalPages (Всього: @TotalCount записів)
+            </div>
+        }
+    </nav>
+}
+
+@code {
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public int TotalCount { get; set; }
+    [Parameter] public bool HasPrevious { get; set; }
+    [Parameter] public bool HasNext { get; set; }
+    [Parameter] public bool ShowSummary { get; set; } = true;
+
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+}

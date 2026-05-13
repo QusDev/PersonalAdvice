@@ -78,70 +78,12 @@
     </table>
 </div>
 
-@if (_totalPages > 1)
-{
-    <nav class="mt-5 mb-4">
-        <ul class="pagination justify-content-center align-items-center">
-            <li class="page-item @(!_hasPrevious ? "disabled" : "")">
-                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
-                        @onclick="() => ChangePage(_currentPage - 1)"
-                        disabled="@(!_hasPrevious)">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-            </li>
-
-            <li class="page-item @(_currentPage == 1 ? "active" : "")">
-                <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == 1 ? "bg-primary text-white" : "text-dark")"
-                        @onclick="() => ChangePage(1)">
-                    1
-                </button>
-            </li>
-
-            @if (_currentPage > 3)
-            {
-                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
-            }
-
-            @for (int i = Math.Max(2, _currentPage - 1); i <= Math.Min(_totalPages - 1, _currentPage + 1); i++)
-            {
-                var pageNum = i;
-                <li class="page-item @(_currentPage == pageNum ? "active" : "")">
-                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == pageNum ? "bg-primary text-white" : "text-dark")"
-                            @onclick="() => ChangePage(pageNum)">
-                        @pageNum
-                    </button>
-                </li>
-            }
-
-            @if (_currentPage < _totalPages - 2)
-            {
-                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
-            }
-
-            @if (_totalPages > 1)
-            {
-                <li class="page-item @(_currentPage == _totalPages ? "active" : "")">
-                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == _totalPages ? "bg-primary text-white" : "text-dark")"
-                            @onclick="() => ChangePage(_totalPages)">
-                        @_totalPages
-                    </button>
-                </li>
-            }
-
-            <li class="page-item @(!_hasNext ? "disabled" : "")">
-                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
-                        @onclick="() => ChangePage(_currentPage + 1)"
-                        disabled="@(!_hasNext)">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
-            </li>
-        </ul>
-        <div class="text-center text-muted small mt-2">
-            Сторінка @_currentPage з @_totalPages (Всього: @_totalCount)
-        </div>
-    </nav>
-}
-
+<Pagination CurrentPage="@_currentPage"
+            TotalPages="@_totalPages"
+            TotalCount="@_totalCount"
+            HasPrevious="@_hasPrevious"
+            HasNext="@_hasNext"
+            OnPageChanged="ChangePage" />
 
 <AdminGenreFormModal @bind-IsVisible="_showModal" 
                 GenreModel="_editingGenre" 

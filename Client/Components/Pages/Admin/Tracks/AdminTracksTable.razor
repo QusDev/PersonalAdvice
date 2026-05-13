@@ -1,0 +1,187 @@
+﻿@using Client.Services.Interfaces
+@using Shared.DTOs.Tracks
+@using Shared.DTOs.Entities
+@inject ITrackService trackService
+@inject IJSRuntime JS
+
+<div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white">
+    <h5 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-music-note-beamed me-2 text-primary"></i>Керування треками
+    </h5>
+    <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenCreateModal">
+        <i class="bi bi-plus-lg me-1"></i> Додати трек
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light text-secondary">
+            <tr class="small text-uppercase fw-bold">
+                <th class="ps-4">Трек / Альбом</th>
+                <th>Рік</th>
+                <th>Тривалість</th>
+                <th>Рейтинг</th>
+                <th class="text-end pe-4">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_tracks == null)
+            {
+                <tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm"></div></td></tr>
+            }
+            else
+            {
+                @foreach (var track in _tracks)
+                {
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="@(string.IsNullOrEmpty(track.PhotoUrl) ? "/images/no-cover.png" : track.PhotoUrl)"
+                                     class="rounded-3 me-3" style="width: 45px; height: 45px; object-fit: cover;" />
+                                <div>
+                                    <div class="fw-bold text-dark">@track.Title</div>
+                                    <div class="text-muted small">@track.AlbumName</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-muted small">@track.ReleaseYear</td>
+                        <td class="text-muted small">@track.DurationMinutes хв</td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi bi-star-fill text-warning me-1"></i> @track.AverageRating.ToString("0.0")
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm" @onclick="() => OpenEditModal(track)">
+                                <i class="bi bi-pencil text-primary"></i>
+                            </button>
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm ms-1" @onclick="() => OnDelete(track.Id)">
+                                <i class="bi bi-trash text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<Pagination CurrentPage="@_currentPage"
+            TotalPages="@_totalPages"
+            TotalCount="@_totalCount"
+            HasPrevious="@_hasPrevious"
+            HasNext="@_hasNext"
+            OnPageChanged="ChangePage" />
+
+<AdminTrackFormModal @bind-IsVisible="_showModal"
+                     TrackModel="_editingTrack"
+                     OnSave="SaveTrack" />
+
+<StatusNotification @bind-IsVisible="_showStatus"
+                    IsSuccess="_isLastOpSuccess"
+                    Message="@_statusMessage" />
+
+@code {
+    private List<TrackDto>? _tracks;
+    private bool _showModal = false;
+    private TrackDto _editingTrack = new();
+    
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious;
+    private bool _hasNext;
+    private const int pageSize = 8;
+
+    private bool _showStatus = false;
+    private bool _isLastOpSuccess = false;
+    private string _statusMessage = "";
+
+    protected override async Task OnInitializedAsync() => await LoadTracks();
+
+    private async Task LoadTracks()
+    {
+        _tracks = null;
+        var response = await trackService.GetTracksAsync(new GetAllTrackDto { PageNumber = _currentPage, PageSize = 8 });
+        if (response != null)
+        {
+            _tracks = response.Items.ToList();
+            _currentPage = response.PageNumber;
+            _totalPages = response.TotalPages;
+            _totalCount = response.TotalCount;
+            _hasPrevious = response.HasPrevious;
+            _hasNext = response.HasNext;
+        }
+    }
+
+    private void OpenCreateModal() { _editingTrack = new TrackDto(); _showModal = true; }
+
+    private void OpenEditModal(TrackDto track) { _editingTrack = track; _showModal = true; }
+
+    private async Task SaveTrack(TrackDto track)
+    {
+        bool success;
+        string msg;
+
+        if (track.Id == 0)
+        {
+            var dto = new CreateTrackDto
+            {
+                AudioUrl = null,
+                Title = track.Title,
+                AlbumName = track.AlbumName,
+                ReleaseYear = track.ReleaseYear,
+                DurationMinutes = track.DurationMinutes,
+                PhotoUrl = track.PhotoUrl,
+                Description = track.Description,
+                AverageRating = track.AverageRating,
+                Lyrics = track.Lyrics,
+                GenreIds = track.Genres?.Select(g => g.Id).ToList() ?? new()
+            };
+            var res = await trackService.CreateTrackAsync(dto);
+            success = res.isSuccess;
+            msg = success ? "Трек додано" : res.message;
+        }
+        else
+        {
+            var dto = new UpdateTrackDto
+            {
+                Id = track.Id,
+                AudioUrl = null,
+                Title = track.Title,
+                AlbumName = track.AlbumName,
+                ReleaseYear = track.ReleaseYear,
+                DurationMinutes = track.DurationMinutes,
+                PhotoUrl = track.PhotoUrl,
+                Description = track.Description,
+                AverageRating = track.AverageRating,
+                Lyrics = track.Lyrics,
+                GenreIds = track.Genres?.Select(g => g.Id).ToList() ?? new()
+            };
+            var res = await trackService.UpdateTrackAsync(dto);
+            success = true;
+            success = res.isSuccess; msg = success ? "Трек оновлено" : res.message;
+        }
+
+        ShowStatus(success, msg);
+        if (success) await LoadTracks();
+    }
+
+    private async Task OnDelete(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Видалити цей трек?"))
+        {
+            var res = await trackService.DeleteTrackAsync(id);
+            ShowStatus(res.isSuccess, res.isSuccess ? "Видалено" : res.message);
+            if (res.isSuccess) await LoadTracks();
+        }
+    }
+
+    private async Task ChangePage(int newPage)
+    {
+        _currentPage = newPage;
+        await LoadTracks();
+    }
+
+    private void ShowStatus(bool s, string m) { _isLastOpSuccess = s; _statusMessage = m; _showStatus = true; }
+}
