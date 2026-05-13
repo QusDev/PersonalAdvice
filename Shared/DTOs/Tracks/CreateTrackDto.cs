@@ -11,8 +11,6 @@ namespace Shared.DTOs.Tracks
 
         [Required]
         public string Title { get; set; } = null!;
-        [MaxLength(2000)]
-        public string? Description { get; set; }
         [Required]
         public int ReleaseYear { get; set; }
         public string? PhotoUrl { get; set; }

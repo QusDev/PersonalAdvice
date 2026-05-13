@@ -1,7 +1,10 @@
-﻿namespace Shared.DTOs.Jamendo
+﻿using System.Text.Json.Serialization;
+
+namespace Shared.DTOs.Jamendo
 {
     public class JamendoStats
     {
-        public string RateTotal_Average { get; set; } = "0";
+        [JsonPropertyName("avgnote")]
+        public double? Avgnote { get; set; }
     }
 }

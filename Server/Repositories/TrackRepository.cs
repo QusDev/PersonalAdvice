@@ -11,6 +11,13 @@ namespace Server.Repositories
         {
         }
 
+        public async Task DeleteAllAsync()
+        {
+            var tracks = await _context.Tracks.ToListAsync();
+            _context.Tracks.RemoveRange(tracks);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<bool> IsExistsTrackAsync(string title, string albumName)
         {
             return await _dbSet.AnyAsync(x => x.Title == title && x.AlbumName == albumName);

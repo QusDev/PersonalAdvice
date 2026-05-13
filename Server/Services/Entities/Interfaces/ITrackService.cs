@@ -13,5 +13,6 @@ namespace Server.Services.Entities.Interfaces
         Task<Result<PagedResponse<TrackDto>>> GetAllAsync(GetAllTrackDto dto);
         Task<Result<TrackDto>> GetByIdAsync(int id);
         Task<bool> IsExistsTrackAsync(string title, string albumName);
+        Task DeleteAllAsync();
     }
 }

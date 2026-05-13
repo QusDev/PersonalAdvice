@@ -1,0 +1,53 @@
+﻿<div class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold m-0">Імпорт треків</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            
+            <div class="modal-body py-4">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Початкова сторінка</label>
+                    <input type="number" @bind="_startPage" class="form-control rounded-3 bg-light border-0" min="1" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Кількість сторінок</label>
+                    <input type="number" @bind="_pageCount" class="form-control rounded-3 bg-light border-0" min="1" max="10" />
+                    <div class="form-text small">Не рекомендується більше 10 за раз.</div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" @onclick="Close">Скасувати</button>
+                <button type="button" class="btn btn-success rounded-pill px-4 shadow-sm" @onclick="HandleImport" disabled="@_isProcessing">
+                    @if (_isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Запустити
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<(int Start, int Count)> OnImport { get; set; }
+
+    private int _startPage = 1;
+    private int _pageCount = 1;
+    private bool _isProcessing = false;
+
+    private async Task Close() => await IsVisibleChanged.InvokeAsync(false);
+
+    private async Task HandleImport()
+    {
+        _isProcessing = true;
+        await OnImport.InvokeAsync((_startPage, _pageCount));
+        _isProcessing = false;
+        await Close();
+    }
+}

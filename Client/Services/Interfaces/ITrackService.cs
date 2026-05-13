@@ -10,5 +10,6 @@ namespace Client.Services.Interfaces
         Task<(bool isSuccess, string message)> CreateTrackAsync(CreateTrackDto dto);
         Task<(bool isSuccess, string message)> UpdateTrackAsync(UpdateTrackDto dto);
         Task<(bool isSuccess, string message)> DeleteTrackAsync(int id);
+        Task<(bool isSuccess, string message)> ImportFromJamendoAsync(int pageNumber, int pageCount);
     }
 }

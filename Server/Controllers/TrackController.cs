@@ -63,6 +63,14 @@ namespace Server.Controllers
             return Ok(result.Value);
         }
 
+        [HttpDelete("delete-all")]
+        [Authorize(Roles = Role.Admin)]
+        public async Task<IActionResult> DeleteAll()
+        {
+            await _trackService.DeleteAllAsync();
+            return Ok();
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -90,13 +98,13 @@ namespace Server.Controllers
         }
 
         [HttpPost("import/popular")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1, [FromQuery]int pageSize = 10)
+        [Authorize(Roles = Role.Admin)]
+        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1, [FromQuery]int pageCount = 1)
         {
             if (page < 1 || page > 500)
                 return BadRequest("The page number must be between 1 and 500");
 
-            var result = await _jamendoService.ImportTrendingTracksAsync(page, pageSize);
+            var result = await _jamendoService.ImportTrendingTracksAsync(page, pageCount);
 
             if (result.IsFailure)
             {

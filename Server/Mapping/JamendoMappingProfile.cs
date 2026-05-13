@@ -15,15 +15,11 @@ namespace Server.Mapping
                         ? DateTime.Parse(src.ReleaseDate).Year
                         : 0))
                 .ForMember(dest => dest.PhotoUrl, opt => opt.MapFrom(src => src.Image))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => $"Artist: {src.ArtistName}. Album: {src.AlbumName}"))
-                .ForMember(dest => dest.DurationMinutes, opt => opt.MapFrom(src => src.Duration / 60))
+                .ForMember(dest => dest.DurationMinutes, opt => opt.MapFrom(src => Math.Round((double)src.Duration / 60, 2)))
                 .ForMember(dest => dest.AlbumName, opt => opt.MapFrom(src => src.AlbumName))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.AudioUrl, opt => opt.MapFrom(src => src.Audio))
-                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => 
-                    !string.IsNullOrEmpty(src.Stats.RateTotal_Average)
-                        ? double.Parse(src.Stats.RateTotal_Average)
-                        : 0))
+                .ForMember(dest => dest.AverageRating, opt => opt.MapFrom(src => src.Stats.Avgnote ?? 1.0))
                 .ForMember(dest => dest.GenreIds, opt => opt.Ignore());
 
             CreateMap<JamendoArtistItem, CreatePeopleDto>()

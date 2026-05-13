@@ -8,15 +8,21 @@
     <h5 class="mb-0 fw-bold text-dark">
         <i class="bi bi-music-note-beamed me-2 text-primary"></i>Керування треками
     </h5>
-    <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenCreateModal">
-        <i class="bi bi-plus-lg me-1"></i> Додати трек
-    </button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenImportModal">
+            <i class="bi bi-cloud-download me-1"></i> Імпорт з Jamendo
+        </button>
+        <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenCreateModal">
+            <i class="bi bi-plus-lg me-1"></i> Додати трек
+        </button>
+    </div>
 </div>
 
 <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
         <thead class="bg-light text-secondary">
             <tr class="small text-uppercase fw-bold">
+                <th class="ps-4">Id</th>
                 <th class="ps-4">Трек / Альбом</th>
                 <th>Рік</th>
                 <th>Тривалість</th>
@@ -34,6 +40,7 @@
                 @foreach (var track in _tracks)
                 {
                     <tr>
+                        <td class="text-muted small">@track.Id</td>
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
                                 <img src="@(string.IsNullOrEmpty(track.PhotoUrl) ? "/images/no-cover.png" : track.PhotoUrl)"
@@ -77,6 +84,8 @@
                      TrackModel="_editingTrack"
                      OnSave="SaveTrack" />
 
+<AdminImportJamendoModal @bind-IsVisible="_showImportModal" OnImport="RunJamendoImport" />
+
 <StatusNotification @bind-IsVisible="_showStatus"
                     IsSuccess="_isLastOpSuccess"
                     Message="@_statusMessage" />
@@ -96,6 +105,8 @@
     private bool _showStatus = false;
     private bool _isLastOpSuccess = false;
     private string _statusMessage = "";
+
+    private bool _showImportModal = false;
 
     protected override async Task OnInitializedAsync() => await LoadTracks();
 
@@ -133,7 +144,6 @@
                 ReleaseYear = track.ReleaseYear,
                 DurationMinutes = track.DurationMinutes,
                 PhotoUrl = track.PhotoUrl,
-                Description = track.Description,
                 AverageRating = track.AverageRating,
                 Lyrics = track.Lyrics,
                 GenreIds = track.Genres?.Select(g => g.Id).ToList() ?? new()
@@ -153,7 +163,6 @@
                 ReleaseYear = track.ReleaseYear,
                 DurationMinutes = track.DurationMinutes,
                 PhotoUrl = track.PhotoUrl,
-                Description = track.Description,
                 AverageRating = track.AverageRating,
                 Lyrics = track.Lyrics,
                 GenreIds = track.Genres?.Select(g => g.Id).ToList() ?? new()
@@ -184,4 +193,21 @@
     }
 
     private void ShowStatus(bool s, string m) { _isLastOpSuccess = s; _statusMessage = m; _showStatus = true; }
+
+    private void OpenImportModal() => _showImportModal = true;
+
+    private async Task RunJamendoImport((int Start, int Count) args)
+    {
+        var (isSuccess, message) = await trackService.ImportFromJamendoAsync(args.Start, args.Count);
+
+        if (isSuccess)
+        {
+            ShowStatus(true, $"Імпорт завершено успішно! Завантажено сторінок: {args.Count}");
+            await LoadTracks();
+        }
+        else
+        {
+            ShowStatus(false, $"Помилка імпорту: {message}");
+        }
+    }
 }

@@ -42,11 +42,6 @@
                             <InputText @bind-Value="TrackModel.PhotoUrl" class="form-control rounded-3 bg-light border-0" />
                         </div>
 
-                        <div class="col-12">
-                            <label class="form-label small fw-bold text-muted text-uppercase">Опис</label>
-                            <InputTextArea @bind-Value="TrackModel.Description" class="form-control rounded-3 bg-light border-0" rows="2" />
-                        </div>
-
                         <div class="col-12 text-center my-2">
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="() => _showLyrics = !_showLyrics">
                                 @(_showLyrics ? "Сховати слова" : "Додати слова пісні")

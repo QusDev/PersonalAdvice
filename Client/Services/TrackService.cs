@@ -76,6 +76,30 @@ namespace Client.Services
             return response;
         }
 
+        public async Task<(bool isSuccess, string message)> ImportFromJamendoAsync(int pageNumber, int pageCount)
+        {
+            var url = $"{_options.Value.BackendApiBaseUrl}/tracks/import/popular?page={pageNumber}&pageCount={pageCount}";
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Options.Set(new HttpRequestOptionsKey<bool>("Authorize"), true);
+            var response = await _httpClient.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, "");
+            }
+
+            try
+            {
+                var errors = await response.Content.ReadFromJsonAsync<List<Error>>();
+                var message = string.Join("\n", errors!.Select(x => x.Message));
+                return (false, message);
+            }
+            catch (Exception)
+            {
+                return (false, "invalid connection");
+            }
+        }
+
         public async Task<(bool isSuccess, string message)> UpdateTrackAsync(UpdateTrackDto dto)
         {
             var url = $"{_options.Value.BackendApiBaseUrl}/tracks";

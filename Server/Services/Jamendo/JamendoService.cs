@@ -40,11 +40,12 @@ namespace Server.Services.Jamendo
             _baseUrl = configuration["JamendoApi:BaseUrl"]!;
         }
 
-        public async Task<Result<int>> ImportTrendingTracksAsync(int page, int pageSize)
+        public async Task<Result<int>> ImportTrendingTracksAsync(int page, int pageCount)
         {
+            const int pageSize = 20;
             int offset = (page - 1) * pageSize;
 
-            var url = $"{_baseUrl}tracks/?client_id={_apiKey}&format=json&limit={pageSize}&offset={offset}&order=popularity_total&include=lyrics";
+            var url = $"{_baseUrl}tracks/?client_id={_apiKey}&format=json&limit={pageSize * pageCount}&offset={offset}&order=popularity_total&include=lyrics musicinfo stats";
 
             var response = await _httpClient.GetFromJsonAsync<JamendoResponse>(url);
             if (response?.Results == null)
@@ -61,9 +62,9 @@ namespace Server.Services.Jamendo
 
                 var track = _mapper.Map<CreateTrackDto>(jamendoTrack);
 
-                if (jamendoTrack.Musicinfo.Tags.Genres.Any())
+                if (jamendoTrack.MusicInfo.Tags.Genres.Any())
                 {
-                    foreach (var jamendoGenre in jamendoTrack.Musicinfo.Tags.Genres)
+                    foreach (var jamendoGenre in jamendoTrack.MusicInfo.Tags.Genres)
                     {
                         var genre = await _genreService.GetByNameAsync(jamendoGenre);
 
