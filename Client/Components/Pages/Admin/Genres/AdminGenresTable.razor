@@ -1,0 +1,259 @@
+﻿@rendermode InteractiveServer
+
+@using Client.Services.Interfaces
+@using Shared.DTOs.Entities
+@using Shared.DTOs.Genres
+@inject IGenreService genreService
+@inject IJSRuntime JS
+
+<style>
+    .page-link:focus {
+        box-shadow: none;
+        background-color: transparent;
+    }
+    
+    .page-item.disabled .page-link {
+        background-color: transparent;
+        color: #ccc;
+    }
+</style>
+
+<div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white">
+    <h5 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-tags me-2"></i>Управління жанрами
+    </h5>
+    <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" @onclick="() => OpenCreateModal()">
+        <i class="bi bi-plus-lg me-1"></i> Створити жанр
+    </button>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light text-secondary">
+            <tr class="small text-uppercase fw-bold">
+                <th class="ps-4" style="width: 100px;">ID</th>
+                <th>Назва жанру</th>
+                <th class="text-end pe-4">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (genres == null)
+            {
+                <tr>
+                    <td colspan="3" class="text-center py-5">
+                        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                        <div class="text-muted small mt-2">Завантаження даних...</div>
+                    </td>
+                </tr>
+            }
+            else if (!genres.Any())
+            {
+                <tr>
+                    <td colspan="3" class="text-center py-5 text-muted">
+                        Жанрів не знайдено.
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var genre in genres)
+                {
+                    <tr>
+                        <td class="ps-4 text-muted">#@genre.Id</td>
+                        <td>
+                            <span class="fw-bold text-dark">@genre.Name</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm" title="Редагувати" @onclick="() => OpenEditModal(genre)">
+                                <i class="bi bi-pencil text-primary"></i>
+                            </button>
+                            <button class="btn btn-light btn-sm rounded-circle shadow-sm ms-1" title="Видалити" @onclick="() => OnDelete(genre.Id)">
+                                <i class="bi bi-trash text-danger"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (_totalPages > 1)
+{
+    <nav class="mt-5 mb-4">
+        <ul class="pagination justify-content-center align-items-center">
+            <li class="page-item @(!_hasPrevious ? "disabled" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => ChangePage(_currentPage - 1)"
+                        disabled="@(!_hasPrevious)">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </li>
+
+            <li class="page-item @(_currentPage == 1 ? "active" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == 1 ? "bg-primary text-white" : "text-dark")"
+                        @onclick="() => ChangePage(1)">
+                    1
+                </button>
+            </li>
+
+            @if (_currentPage > 3)
+            {
+                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+            }
+
+            @for (int i = Math.Max(2, _currentPage - 1); i <= Math.Min(_totalPages - 1, _currentPage + 1); i++)
+            {
+                var pageNum = i;
+                <li class="page-item @(_currentPage == pageNum ? "active" : "")">
+                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == pageNum ? "bg-primary text-white" : "text-dark")"
+                            @onclick="() => ChangePage(pageNum)">
+                        @pageNum
+                    </button>
+                </li>
+            }
+
+            @if (_currentPage < _totalPages - 2)
+            {
+                <li class="page-item disabled"><span class="page-link border-0">...</span></li>
+            }
+
+            @if (_totalPages > 1)
+            {
+                <li class="page-item @(_currentPage == _totalPages ? "active" : "")">
+                    <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == _totalPages ? "bg-primary text-white" : "text-dark")"
+                            @onclick="() => ChangePage(_totalPages)">
+                        @_totalPages
+                    </button>
+                </li>
+            }
+
+            <li class="page-item @(!_hasNext ? "disabled" : "")">
+                <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
+                        @onclick="() => ChangePage(_currentPage + 1)"
+                        disabled="@(!_hasNext)">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+        </ul>
+        <div class="text-center text-muted small mt-2">
+            Сторінка @_currentPage з @_totalPages (Всього: @_totalCount)
+        </div>
+    </nav>
+}
+
+
+<AdminGenreFormModal @bind-IsVisible="_showModal" 
+                GenreModel="_editingGenre" 
+                OnSave="SaveGenre" />
+
+<StatusNotification @bind-IsVisible="_showStatus"
+                    IsSuccess="_isLastOpSuccess"
+                    Message="@_statusMessage" />
+
+@code {
+    private List<GenreDto>? genres;
+
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious;
+    private bool _hasNext;
+    private const int pageSize = 8;
+
+    private bool _showModal = false;
+    private GenreDto _editingGenre = new();
+
+    private bool _showStatus = false;
+    private bool _isLastOpSuccess = false;
+    private string _statusMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGenres();
+    }
+
+    private async Task LoadGenres()
+    {
+        genres = null;
+
+        var dto = new GetAllGenreDto()
+        {
+            PageNumber = _currentPage,
+            PageSize = pageSize
+        };
+
+        var response = await genreService.GetGenresAsync(dto);
+
+        if (response != null)
+        {
+            genres = response.Items.ToList();
+            _currentPage = response.PageNumber;
+            _totalPages = response.TotalPages;
+            _totalCount = response.TotalCount;
+            _hasPrevious = response.HasPrevious;
+            _hasNext = response.HasNext;
+        }
+    }
+
+    private async Task ChangePage(int newPage) { if (newPage >= 1 && newPage <= _totalPages) { _currentPage = newPage; await LoadGenres(); } }
+
+    private void OpenCreateModal()
+    {
+        _editingGenre = new GenreDto();
+        _showModal = true;
+    }
+
+    private void OpenEditModal(GenreDto genre)
+    {
+        _editingGenre = new GenreDto { Id = genre.Id, Name = genre.Name };
+        _showModal = true;
+    }
+
+    private async Task SaveGenre(GenreDto genre)
+    {
+        bool success;
+        string message;
+
+        if (genre.Id == 0)
+        {
+            var result = await genreService.CreateGenreAsync(new CreateGenreDto { Name = genre.Name });
+            success = result.isSuccess;
+            message = success ? "Жанр успішно створено!" : result.message;
+        }
+        else
+        {
+            var result = await genreService.UpdateGenreAsync(new UpdateGenreDto { Id = genre.Id, Name = genre.Name });
+            success = result.isSuccess;
+            message = success ? "Зміни збережено!" : result.message;
+        }
+
+        ShowStatus(success, message);
+        if (success) await LoadGenres();
+    }
+
+    private async Task OnDelete(int id)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Ви впевнені, що хочете видалити цей жанр?");
+        if (!confirmed) return;
+
+        var result = await genreService.DeleteGenreAsync(id);
+        
+        if (result.isSuccess)
+        {
+            ShowStatus(true, "Жанр видалено");
+            await LoadGenres();
+        }
+        else
+        {
+            ShowStatus(false, result.message);
+        }
+    }
+
+    private void ShowStatus(bool success, string message)
+    {
+        _isLastOpSuccess = success;
+        _statusMessage = message;
+        _showStatus = true;
+    }
+}

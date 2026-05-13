@@ -1,0 +1,64 @@
+﻿@page "/admin"
+@attribute [Authorize(Roles = Role.Admin)]
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@using Shared.Constants
+
+@inject NavigationManager NavManager
+
+<style>
+    .admin-card {
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 24px;
+    }
+
+        .admin-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+        }
+
+    .icon-box {
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+        border-radius: 20px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-dark">Панель керування</h1>
+        <p class="text-muted">Оберіть розділ для роботи з системою</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-5">
+            <div class="card h-100 border-0 shadow-sm admin-card" @onclick='() => NavManager.NavigateTo("/admin/tables")'>
+                <div class="card-body text-center p-5">
+                    <div class="icon-box bg-primary-subtle text-primary mb-4">
+                        <i class="bi bi-table fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold">Таблиці даних</h3>
+                    <p class="text-muted">Керування книгами, користувачами, авторами та жанрами в зручному форматі</p>
+                    <button class="btn btn-primary rounded-pill px-4 mt-3">Перейти до таблиць</button>
+                </div>
+            </div>
+        </div>
+
+        @* <div class="col-md-5">
+            <div class="card h-100 border-0 shadow-sm admin-card" @onclick='() => NavManager.NavigateTo("/admin/analytics")'>
+                <div class="card-body text-center p-5">
+                    <div class="icon-box bg-success-subtle text-success mb-4">
+                        <i class="bi bi-graph-up-arrow fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold">Аналітика</h3>
+                    <p class="text-muted">Статистика популярності книг, активність читачів та звіти по видачах</p>
+                    <button class="btn btn-success rounded-pill px-4 mt-3">Переглянути звіти</button>
+                </div>
+            </div>
+        </div> *@
+    </div>
+</div>
