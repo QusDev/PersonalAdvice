@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @attribute [Authorize(Roles = Role.Admin)]
 @using Client.Components.Pages.Admin.Genres
+@using Client.Components.Pages.Admin.Movies
 @using Client.Components.Pages.Admin.Tracks
 @using Microsoft.AspNetCore.Authorization
 @using Shared.Constants
@@ -21,8 +22,8 @@
                 <button class="btn @GetTabClass("tracks")" @onclick='() => SetTab("tracks")'>
                     <i class="bi bi-book me-2"></i>Треки
                 </button>
-                <button class="btn @GetTabClass("authors")" @onclick='() => SetTab("authors")'>
-                    <i class="bi bi-person-badge me-2"></i>Автори
+                <button class="btn @GetTabClass("movies")" @onclick='() => SetTab("movies")'>
+                    <i class="bi bi-person-badge me-2"></i>Фільми
                 </button>
                 <button class="btn @GetTabClass("genres")" @onclick='() => SetTab("genres")'>
                     <i class="bi bi-tags me-2"></i>Жанри
@@ -41,8 +42,8 @@
                         case "tracks":
                             <AdminTracksTable/>
                             break;
-                        case "authors":
-                            <div class="p-5 text-center text-muted">Таблиця Жанрів (в розробці)</div>
+                        case "movies":
+                            <AdminMoviesTable/>
                             break;
                         case "genres":
                             <AdminGenresTable/>

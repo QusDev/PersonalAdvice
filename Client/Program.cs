@@ -26,6 +26,7 @@ builder.Services.AddScoped<ILocalStorage, LocalStorage>();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 builder.Services.AddHttpClient<IGenreService, GenreService>().AddHttpMessageHandler<JwtHandler>();
 builder.Services.AddHttpClient<ITrackService, TrackService>().AddHttpMessageHandler<JwtHandler>();
+builder.Services.AddHttpClient<IMovieService, MovieService>().AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped(sp => (CustomAuthStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());

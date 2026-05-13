@@ -1,0 +1,249 @@
+﻿@using Client.Services.Interfaces
+@using Shared.DTOs.Movie
+@using Shared.DTOs.Entities
+@inject IMovieService movieService
+@inject IJSRuntime JS
+
+<div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white shadow-sm">
+    <h5 class="mb-0 fw-bold text-dark">
+        <i class="bi bi-film me-2 text-danger"></i>Керування фільмами
+    </h5>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenImportModal">
+            <i class="bi bi-cloud-arrow-down me-1"></i> TMDB Імпорт
+        </button>
+        <button class="btn btn-dark btn-sm rounded-pill px-3 shadow-sm" @onclick="OpenCreateModal">
+            <i class="bi bi-plus-lg me-1"></i> Додати фільм
+        </button>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light text-secondary">
+            <tr class="small text-uppercase fw-bold">
+                <th class="ps-4">Id</th>
+                <th class="ps-4">Постер / Назва</th>
+                <th>Рік</th>
+                <th>Жанри</th>
+                <th>Тривалість</th>
+                <th>Вік</th>
+                <th>Рейтинг</th>
+                <th class="text-end pe-4">Дії</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_movies == null)
+            {
+                <tr><td colspan="6" class="text-center py-5"><div class="spinner-border text-danger spinner-border-sm"></div></td></tr>
+            }
+            else
+            {
+                @foreach (var movie in _movies)
+                {
+                    <tr>
+                        <td class="ps-4 small text-muted">@movie.Id</td>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <img src="@(string.IsNullOrEmpty(movie.PhotoUrl) ? "/images/no-poster.png" : movie.PhotoUrl)"
+                                     class="rounded-2 me-3 shadow-sm" style="width: 40px; height: 60px; object-fit: cover;" />
+                                <div class="fw-bold text-dark">@movie.Title</div>
+                            </div>
+                        </td>
+                        <td class="small">@movie.ReleaseYear</td>
+                        <td>
+                            @if (movie.Genres != null && movie.Genres.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var genre in movie.Genres.Take(3))
+                                    {
+                                        <span class="badge bg-light text-dark border rounded-pill fw-normal" style="font-size: 0.7rem;">
+                                            @genre.Name
+                                        </span>
+                                    }
+                                    @if (movie.Genres.Count > 3)
+                                    {
+                                        <span class="badge bg-light text-muted border rounded-pill fw-normal" style="font-size: 0.7rem;">
+                                            +@(movie.Genres.Count - 3)
+                                        </span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Не вказано</span>
+                            }
+                        </td>
+                        <td class="small">@movie.DurationMinutes хв</td>
+                        <td>
+                            @if (movie.Adult)
+                            {
+                                <span class="badge bg-danger rounded-pill">18+</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success rounded-pill">G</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-star-fill text-warning me-1 small"></i>
+                                <span class="fw-bold">@movie.AverageRating.ToString("0.0")</span>
+                            </div>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-outline-secondary btn-sm rounded-circle shadow-sm" @onclick="() => OpenEditModal(movie)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm rounded-circle shadow-sm ms-1" @onclick="() => OnDelete(movie.Id)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<Pagination CurrentPage="@_currentPage"
+            TotalPages="@_totalPages"
+            TotalCount="@_totalCount"
+            HasPrevious="@_hasPrevious"
+            HasNext="@_hasNext"
+            OnPageChanged="ChangePage" />
+
+<AdminMovieFormModal @bind-IsVisible="_showModal"
+                     MovieModel="_editingMovie"
+                     OnSave="SaveMovie" />
+
+<AdminImportTmdbModal @bind-IsVisible="_showImportModal" OnImport="RunTmdbImport" />
+
+<StatusNotification @bind-IsVisible="_showStatus"
+                    IsSuccess="_isLastOpSuccess"
+                    Message="@_statusMessage" />
+
+@code {
+    private List<MovieDto>? _movies;
+    private bool _showModal = false;
+    private MovieDto _editingMovie = new();
+
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private int _totalCount = 0;
+    private bool _hasPrevious;
+    private bool _hasNext;
+    private const int pageSize = 8;
+
+    private bool _showStatus = false;
+    private bool _isLastOpSuccess = false;
+    private string _statusMessage = "";
+
+    private bool _showImportModal = false;
+
+    protected override async Task OnInitializedAsync() => await LoadMovies();
+
+    private async Task LoadMovies()
+    {
+        _movies = null;
+        var response = await movieService.GetMoviesAsync(new GetAllMovieDto() { PageNumber = _currentPage, PageSize = pageSize });
+        if (response != null)
+        {
+            _movies = response.Items.ToList();
+            _currentPage = response.PageNumber;
+            _totalPages = response.TotalPages;
+            _totalCount = response.TotalCount;
+            _hasPrevious = response.HasPrevious;
+            _hasNext = response.HasNext;
+        }
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _currentPage = page;
+        await LoadMovies();
+    }
+
+    private void OpenCreateModal() { _editingMovie = new MovieDto(); _showModal = true; }
+
+    private void OpenEditModal(MovieDto movie) { _editingMovie = movie; _showModal = true; }
+
+    private async Task SaveMovie(MovieDto movie)
+    {
+        bool success;
+        string msg;
+        var genreIds = movie.Genres?.Select(g => g.Id).ToList() ?? new List<int>();
+
+        if (movie.Id == 0)
+        {
+            var dto = new CreateMovieDto
+            {
+                Title = movie.Title,
+                ReleaseYear = movie.ReleaseYear,
+                DurationMinutes = movie.DurationMinutes,
+                Adult = movie.Adult,
+                PhotoUrl = movie.PhotoUrl,
+                Description = movie.Description,
+                AverageRating = movie.AverageRating,
+                GenreIds = genreIds
+            };
+            var res = await movieService.CreateMovieAsync(dto);
+            success = res.isSuccess; msg = success ? "Фільм додано" : res.message;
+        }
+        else
+        {
+            var dto = new UpdateMovieDto
+            {
+                Id = movie.Id,
+                Title = movie.Title,
+                DurationMinutes = movie.DurationMinutes,
+                Adult = movie.Adult,
+                Description = movie.Description,
+                PhotoUrl = movie.PhotoUrl,
+                AverageRating = movie.AverageRating,
+                ReleaseYear = movie.ReleaseYear,
+                GenreIds = genreIds
+            };
+            var res = await movieService.UpdateMovieAsync(dto);
+            success = res.isSuccess; msg = success ? "Дані оновлено" : res.message;
+        }
+
+        ShowStatus(success, msg);
+        if (success) await LoadMovies();
+    }
+
+    private async Task OnDelete(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Видалити цей фільм?"))
+        {
+            var res = await movieService.DeleteMovieAsync(id);
+            ShowStatus(res.isSuccess, res.isSuccess ? "Фільм видалено" : res.message);
+            if (res.isSuccess) await LoadMovies();
+        }
+    }
+
+    private void OpenImportModal() => _showImportModal = true;
+
+    private async Task RunTmdbImport((int Start, int Count) args)
+    {
+        var result = await movieService.ImportFromTmdbAsync(args.Start, args.Count);
+
+        if (result.isSuccess)
+        {
+            ShowStatus(true, $"Успішно імпортовано {args.Count} сторінок фільмів!");
+            await LoadMovies();
+        }
+        else
+        {
+            ShowStatus(false, $"Помилка імпорту: {result.message}");
+        }
+    }
+
+    private void ShowStatus(bool success, string message)
+    {
+        _isLastOpSuccess = success;
+        _statusMessage = message;
+        _showStatus = true;
+        StateHasChanged();
+    }
+}

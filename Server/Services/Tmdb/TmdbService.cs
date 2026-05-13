@@ -43,7 +43,7 @@ namespace Server.Services.Tmdb
 
         public async Task<Result<int>> ImportMovieWithCreditsAsync(int tmdbId)
         {
-            var movieResponse = await _httpClient.GetAsync($"{_baseUrl}/movie/{tmdbId}?api_key={_apiKey}&language=uk-UA");
+            var movieResponse = await _httpClient.GetAsync($"{_baseUrl}/movie/{tmdbId}?api_key={_apiKey}&language=en-US");
             if (!movieResponse.IsSuccessStatusCode)
             {
                 return Result<int>.Fail(Error.NotFound("TMDB.MovieNotFound", "Tmdb movie not found"));
@@ -57,20 +57,6 @@ namespace Server.Services.Tmdb
             }
 
             var movie = _mapper.Map<CreateMovieDto>(tmdbMovie);
-
-            //var movie = new MovieEntity
-            //{
-            //    Title = tmdbMovie!.Title,
-            //    Description = tmdbMovie.Overview,
-            //    ReleaseYear = DateTime.Parse(tmdbMovie.ReleaseDate).Year,
-            //    PhotoUrl = $"https://image.tmdb.org/t/p/w500{tmdbMovie.PosterPath}",
-            //    AverageRating = tmdbMovie.VoteAverage,
-            //    DurationMinutes = tmdbMovie.Runtime,
-            //    VideoQuality = "FullHD",
-            //    Type = MediaType.Movie,
-            //    Genres = new List<GenreEntity>(),
-            //    MediaCollaborators = new List<MediaCollaboratorEntity>()
-            //};
 
             if (tmdbMovie.Genres != null && tmdbMovie.Genres.Any())
             {
@@ -106,37 +92,39 @@ namespace Server.Services.Tmdb
             return Result<int>.Success(createMovieResult.Value);
         }
 
-        public async Task<Result<int>> ImportPopularMoviesAsync(int pageNumber)
+        public async Task<Result<int>> ImportPopularMoviesAsync(int pageNumber, int pageCount)
         {
-            var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/movie/popular?api_key={_apiKey}&language=uk-UA&page={pageNumber}");
-
-            if (!response.IsSuccessStatusCode)
-                return Result<int>.Fail(Error.Failure("TMDB.ApiError", "Не вдалося отримати список популярних фільмів"));
-
-            var popularData = await response.Content.ReadFromJsonAsync<TmdbPopularResponse>();
-            if (popularData == null || !popularData.Results.Any())
-                return Result<int>.Success(0);
-
             int importedCount = 0;
 
-            foreach (var item in popularData.Results)
+            for (int i = 1; i <= pageCount; i++)
             {
-                if (await _movieService.IsExistsMovieAsync(item.Title, DateTime.Parse(item.ReleaseDate).Year))
-                    continue;
+                var response = await _httpClient.GetAsync(
+                $"{_baseUrl}/movie/popular?api_key={_apiKey}&language=en-US&page={pageNumber + i - 1}");
 
-                var result = await ImportMovieWithCreditsAsync(item.Id);
+                if (!response.IsSuccessStatusCode)
+                    return Result<int>.Fail(Error.Failure("TMDB.ApiError", "Не вдалося отримати список популярних фільмів"));
 
-                if (result.IsSuccess)
-                    importedCount++;
+                var popularData = await response.Content.ReadFromJsonAsync<TmdbPopularResponse>();
+                if (popularData == null || !popularData.Results.Any())
+                    return Result<int>.Success(0);
+
+                foreach (var item in popularData.Results)
+                {
+                    if (await _movieService.IsExistsMovieAsync(item.Title, DateTime.Parse(item.ReleaseDate).Year))
+                        continue;
+
+                    var result = await ImportMovieWithCreditsAsync(item.Id);
+
+                    if (result.IsSuccess)
+                        importedCount++;
+                }
             }
-
             return Result<int>.Success(importedCount);
         }
 
         private async Task ImportCasts(int tmdbMovieId, int movieId)
         {
-            var creditsResponse = await _httpClient.GetAsync($"{_baseUrl}/movie/{tmdbMovieId}/credits?api_key={_apiKey}&language=uk-UA");
+            var creditsResponse = await _httpClient.GetAsync($"{_baseUrl}/movie/{tmdbMovieId}/credits?api_key={_apiKey}&language=en-US");
             var tmdbCredits = await creditsResponse.Content.ReadFromJsonAsync<TmdbCreditsReponse>();
 
             foreach (var castMember in tmdbCredits!.Cast.Take(5))
