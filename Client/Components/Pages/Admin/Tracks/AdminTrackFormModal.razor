@@ -1,4 +1,8 @@
-﻿@using Shared.DTOs.Tracks
+﻿@inject IGenreService genreService;
+
+@using Client.Services.Interfaces
+@using Shared.DTOs.Genres
+@using Shared.DTOs.Tracks
 @using Shared.DTOs.Entities
 
 <div class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
@@ -38,6 +42,22 @@
                         </div>
 
                         <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Жанри (виберіть декілька)</label>
+                            <select class="form-select rounded-3 bg-light border-0 shadow-none"
+                                    multiple
+                                    @onchange="OnGenreSelectionChanged"
+                                    style="height: 120px;">
+                                @foreach (var genre in _allGenres)
+                                {
+                                    <option value="@genre.Id" selected="@SelectedGenreIds.Contains(genre.Id)">
+                                        @genre.Name
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text small text-muted">Утримуйте Ctrl (або Cmd), щоб вибрати кілька жанрів.</div>
+                        </div>
+
+                        <div class="col-12">
                             <label class="form-label small fw-bold text-muted text-uppercase">URL Обкладинки</label>
                             <InputText @bind-Value="TrackModel.PhotoUrl" class="form-control rounded-3 bg-light border-0" />
                         </div>
@@ -72,7 +92,26 @@
     [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
     [Parameter] public EventCallback<TrackDto> OnSave { get; set; }
 
+    private List<GenreDto> _allGenres = new();
+    private List<int> SelectedGenreIds => TrackModel.Genres?.Select(g => g.Id).ToList() ?? new();
     private bool _showLyrics = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var genres = await genreService.GetGenresAsync(new GetAllGenreDto() { PageNumber = 1, PageSize = 100 });
+        if (genres != null) _allGenres = genres.Items.ToList();
+    }
+
+    private void OnGenreSelectionChanged(ChangeEventArgs e)
+    {
+        var selectedValues = (string[])e.Value!;
+        var ids = selectedValues.Select(int.Parse).ToList();
+
+        TrackModel.Genres = _allGenres
+            .Where(g => ids.Contains(g.Id))
+            .Select(g => new GenreDto { Id = g.Id, Name = g.Name })
+            .ToList();
+    }
 
     private async Task Close() => await IsVisibleChanged.InvokeAsync(false);
 
