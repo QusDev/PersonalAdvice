@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
 using Server.Services.Entities.Interfaces;
-using Shared.Constants;
-using Shared.DTOs.Tracks;
+using Shared.DTOs.Entities;
 using Shared.DTOs.UserInteractions;
 
 namespace Server.Controllers
@@ -24,6 +23,20 @@ namespace Server.Controllers
         public async Task<IActionResult> Post([FromBody] CreateUserInteractionDto dto)
         {
             var result = await _userInteractionService.AddAsync(dto);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok(result.Value);
+        }
+
+        [HttpPost("handle")]
+        [Authorize]
+        public async Task<IActionResult> Handle([FromBody] UserInteractionDto dto)
+        {
+            var result = await _userInteractionService.HandleAsync(dto);
 
             if (result.IsFailure)
             {
@@ -65,6 +78,19 @@ namespace Server.Controllers
         public async Task<IActionResult> Get(int id)
         {
             var result = await _userInteractionService.GetByIdAsync(id);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("media-user")]
+        public async Task<IActionResult> Get([FromQuery]int mediaId, [FromQuery]int userId)
+        {
+            var result = await _userInteractionService.GetByMediaAndUserIdsAsync(mediaId, userId);
 
             if (result.IsFailure)
             {

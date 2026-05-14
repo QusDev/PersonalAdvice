@@ -12,5 +12,7 @@ namespace Server.Services.Entities.Interfaces
         Task<Result<bool>> DeleteAsync(int id);
         Task<Result<PagedResponse<UserInteractionDto>>> GetAllAsync(GetAllUserInteractionDto dto);
         Task<Result<UserInteractionDto>> GetByIdAsync(int id);
+        Task<Result<bool>> HandleAsync(UserInteractionDto dto);
+        Task<Result<UserInteractionDto>> GetByMediaAndUserIdsAsync(int mediaId, int userId);
     }
 }

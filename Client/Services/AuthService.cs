@@ -32,7 +32,7 @@ namespace Client.Services
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                _localStorage.Store("authToken", result.Token);
+                _localStorage.Store("authToken", result!.Token);
                 _localStorage.Persist();
 
                 ((CustomAuthStateProvider)_authStateProvider).NotifyUserLogin(result.Token);
