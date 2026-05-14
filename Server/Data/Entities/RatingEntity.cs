@@ -1,5 +1,6 @@
 ﻿using Server.Data.Constants;
 using Server.Data.Entities.Identity;
+using Shared.Enums;
 
 namespace Server.Data.Entities
 {
@@ -12,5 +13,6 @@ namespace Server.Data.Entities
         public MediaContentEntity MediaContent { get; set; } = null!;
 
         public double Score { get; set; }
+        public RecommendationAlgorithm Algorithm { get; set; }
     }
 }

@@ -28,6 +28,8 @@ builder.Services.AddHttpClient<IGenreService, GenreService>().AddHttpMessageHand
 builder.Services.AddHttpClient<ITrackService, TrackService>().AddHttpMessageHandler<JwtHandler>();
 builder.Services.AddHttpClient<IMovieService, MovieService>().AddHttpMessageHandler<JwtHandler>();
 builder.Services.AddHttpClient<IUserInteractionService, UserInteractionService>().AddHttpMessageHandler<JwtHandler>();
+builder.Services.AddHttpClient<IMediaService, MediaService>().AddHttpMessageHandler<JwtHandler>();
+builder.Services.AddHttpClient<IRecommendationService, RecommendationService>().AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped(sp => (CustomAuthStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());

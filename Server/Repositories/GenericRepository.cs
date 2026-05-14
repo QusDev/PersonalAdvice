@@ -22,6 +22,7 @@ namespace Server.Repositories
             Expression<Func<T, TResult>> selector,
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? transform = null,
             int pageNumber = 1,
             int pageSize = 10,
             params Expression<Func<T, object>>[] includes)
@@ -33,6 +34,11 @@ namespace Server.Repositories
 
             if (filter != null)
                 query = query.Where(filter);
+
+            if (transform != null)
+            {
+                query = transform(query);
+            }
 
             int totalCount = await query.CountAsync();
 
@@ -57,11 +63,12 @@ namespace Server.Repositories
         public virtual Task<PagedResponse<T>> GetAllAsync(
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? transform = null,
             int pageNumber = 1,
             int pageSize = 10,
             params Expression<Func<T, object>>[] includes)
         {
-            return GetAllAsync(x => x, filter, orderBy, pageNumber, pageSize, includes);
+            return GetAllAsync(x => x, filter, orderBy, transform, pageNumber, pageSize, includes);
         }
 
         public virtual async Task<TResult?> GetByIdAsync<TResult>(

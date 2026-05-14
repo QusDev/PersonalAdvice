@@ -12,6 +12,8 @@ using Server.Services.Identity;
 using Server.Services.Identity.Interfaces;
 using Server.Services.Jamendo;
 using Server.Services.Jamendo.Interfaces;
+using Server.Services.Recommendation;
+using Server.Services.Recommendation.Interfaces;
 using Server.Services.Tmdb;
 using Server.Services.Tmdb.Interfaces;
 using Server.UnitOfWork;
@@ -103,9 +105,12 @@ builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IUserInteractionService, UserInteractionService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
-builder.Services.AddScoped<ITmdbService, TmdbService>();
-builder.Services.AddScoped<IJamendoService, JamendoService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IJamendoService, JamendoService>();
+builder.Services.AddScoped<ITmdbService, TmdbService>();
+
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 builder.Services.AddHttpClient<ITmdbService, TmdbService>();
 builder.Services.AddHttpClient<IJamendoService, JamendoService>();

@@ -1,4 +1,6 @@
-﻿namespace Shared.DTOs.Entities
+﻿using Shared.Enums;
+
+namespace Shared.DTOs.Entities
 {
     public class RatingDto
     {
@@ -8,5 +10,6 @@
         public int MediaId { get; set; }
 
         public double Score { get; set; }
+        public RecommendationAlgorithm Algorithm { get; set; }
     }
 }

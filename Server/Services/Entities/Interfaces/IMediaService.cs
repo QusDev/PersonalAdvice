@@ -8,5 +8,6 @@ namespace Server.Services.Entities.Interfaces
     {
         Task<Result<PagedResponse<MediaCardDto>>> SearchMediaAsync(SearchMediaDto dto);
         Task<Result<PagedResponse<MediaCardDto>>> CatalogMediaAsync(CatalogMediaDto dto);
+        Task<Result<PagedResponse<MediaCardDto>>> GetUserMediaRecommendationsAsync(GetUserMediaRecommendationsDto dto);
     }
 }
