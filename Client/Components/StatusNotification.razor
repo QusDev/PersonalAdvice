@@ -1,0 +1,117 @@
+﻿@using System.Timers
+
+<style>
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 320px;
+        background: white;
+        border-left: 5px solid;
+        border-radius: 12px;
+        padding: 16px;
+        overflow: hidden;
+    }
+
+    .slide-in {
+        animation: slideInRight 0.4s ease-out forwards;
+    }
+
+    .slide-out {
+        animation: slideOutRight 0.4s ease-in forwards;
+    }
+
+    .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        width: 100%;
+        animation: progressLinear 4s linear forwards;
+    }
+
+    @@keyframes slideInRight {
+        from { transform: translateX(120%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @@keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(120%); opacity: 0; }
+    }
+
+    @@keyframes progressLinear {
+        from { width: 100%; }
+        to { width: 0%; }
+    }
+</style>
+
+@if (IsVisible)
+{
+    <div class="notification-container @(_isClosing ? "slide-out" : "slide-in") @(IsSuccess ? "border-success" : "border-danger") shadow-lg">
+        <div class="d-flex align-items-center gap-3">
+            <div class="icon-section">
+                @if (IsSuccess)
+                {
+                    <i class="bi bi-check-circle-fill text-success fs-3"></i>
+                }
+                else
+                {
+                    <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+                }
+            </div>
+            <div class="text-section flex-grow-1">
+                <div class="fw-bold text-dark">@(IsSuccess ? "Успішно" : "Помилка")</div>
+                <div class="text-muted small">@Message</div>
+            </div>
+            <button type="button" class="btn-close small" @onclick="Close"></button>
+        </div>
+        @* Смужка прогресу для візуалізації часу *@
+        <div class="progress-bar @(IsSuccess ? "bg-success" : "bg-danger")"></div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public bool IsSuccess { get; set; }
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+
+    private bool _isClosing = false;
+    private Timer? _timer;
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible)
+        {
+            _isClosing = false;
+            StartTimer();
+        }
+    }
+
+    private void StartTimer()
+    {
+        _timer?.Dispose();
+        _timer = new Timer(4000); // 4 секунди
+        _timer.Elapsed += async (s, e) => await InvokeAsync(Close);
+        _timer.AutoReset = false;
+        _timer.Start();
+    }
+
+    private async Task Close()
+    {
+        if (_isClosing) return;
+        
+        _isClosing = true;
+        StateHasChanged();
+
+        // Чекаємо завершення анімації виходу (400мс)
+        await Task.Delay(400);
+        
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+        _timer?.Dispose();
+        StateHasChanged();
+    }
+}

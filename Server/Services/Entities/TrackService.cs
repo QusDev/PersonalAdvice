@@ -38,6 +38,11 @@ namespace Server.Services.Entities
             return Result<int>.Success(track.Id);
         }
 
+        public async Task DeleteAllAsync()
+        {
+            await _unitOfWork.Tracks.DeleteAllAsync();
+        }
+
         public async Task<Result<bool>> DeleteAsync(int id)
         {
             var track = await _unitOfWork.Tracks.GetByIdAsync(id);

@@ -43,6 +43,11 @@ namespace Server.Services.Entities
             return Result<int>.Success(movie.Id);
         }
 
+        public async Task DeleteAllAsync()
+        {
+            await _unitOfWork.Movies.DeleteAllAsync();
+        }
+
         public async Task<Result<bool>> DeleteAsync(int id)
         {
             var movie = await _unitOfWork.Movies.GetByIdAsync(id);

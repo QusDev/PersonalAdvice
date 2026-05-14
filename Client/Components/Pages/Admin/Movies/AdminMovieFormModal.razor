@@ -1,0 +1,116 @@
+﻿@inject IGenreService genreService;
+
+@using Client.Services.Interfaces
+@using Shared.DTOs.Genres
+@using Shared.DTOs.Movie
+@using Shared.DTOs.Entities
+
+<div class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="fw-bold">@(MovieModel.Id == 0 ? "Додати новий фільм" : "Редагувати фільм")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            
+            <EditForm Model="MovieModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="modal-body py-0" style="max-height: 75vh; overflow-y: auto;">
+                    <div class="row g-3 p-2">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Назва фільму</label>
+                            <InputText @bind-Value="MovieModel.Title" class="form-control rounded-3 bg-light border-0" />
+                            <ValidationMessage For="@(() => MovieModel.Title)" class="text-danger small" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Рік випуску</label>
+                            <InputNumber @bind-Value="MovieModel.ReleaseYear" class="form-control rounded-3 bg-light border-0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Тривалість (хв)</label>
+                            <InputNumber @bind-Value="MovieModel.DurationMinutes" class="form-control rounded-3 bg-light border-0" step="1" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Рейтинг (0-10)</label>
+                            <InputNumber @bind-Value="MovieModel.AverageRating" class="form-control rounded-3 bg-light border-0" step="0.1" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">URL Постера</label>
+                            <InputText @bind-Value="MovieModel.PhotoUrl" class="form-control rounded-3 bg-light border-0" />
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch p-3 bg-light rounded-3 d-flex align-items-center">
+                                <InputCheckbox @bind-Value="MovieModel.Adult" class="form-check-input ms-0 me-3" id="adultCheck" />
+                                <label class="form-check-label fw-bold text-danger" for="adultCheck">Контент для дорослих (18+)</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Жанри (виберіть декілька)</label>
+                            <select class="form-select rounded-3 bg-light border-0 shadow-none"
+                                    multiple
+                                    @onchange="OnGenreSelectionChanged"
+                                    style="height: 120px;">
+                                @foreach (var genre in _allGenres)
+                                {
+                                    <option value="@genre.Id" selected="@SelectedGenreIds.Contains(genre.Id)">
+                                        @genre.Name
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text small text-muted">Утримуйте Ctrl (або Cmd), щоб вибрати кілька жанрів.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Опис / Синопсис</label>
+                            <InputTextArea @bind-Value="MovieModel.Description" class="form-control rounded-3 bg-light border-0" rows="4" />
+                            <ValidationMessage For="@(() => MovieModel.Description)" class="text-danger small" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" @onclick="Close">Скасувати</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 shadow-sm">Зберегти фільм</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public MovieDto MovieModel { get; set; } = new();
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<MovieDto> OnSave { get; set; }
+
+    private List<GenreDto> _allGenres = new();
+    private List<int> SelectedGenreIds => MovieModel.Genres?.Select(g => g.Id).ToList() ?? new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var genres = await genreService.GetGenresAsync(new GetAllGenreDto() { PageNumber = 1, PageSize = 100});
+        if (genres != null) _allGenres = genres.Items.ToList();
+    }
+
+    private void OnGenreSelectionChanged(ChangeEventArgs e)
+    {
+        var selectedValues = (string[])e.Value!;
+        var ids = selectedValues.Select(int.Parse).ToList();
+
+        MovieModel.Genres = _allGenres
+            .Where(g => ids.Contains(g.Id))
+            .Select(g => new GenreDto { Id = g.Id, Name = g.Name })
+            .ToList();
+    }
+
+    private async Task Close() => await IsVisibleChanged.InvokeAsync(false);
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(MovieModel);
+        await Close();
+    }
+}

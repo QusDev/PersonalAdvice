@@ -6,7 +6,6 @@ namespace Server.Data.Entities
     public abstract class MediaContentEntity : BaseEntity
     {
         public string Title { get; set; } = null!;
-        public string? Description { get; set; }
         public int ReleaseYear { get; set; }
         public string? PhotoUrl { get; set; }
         public MediaType Type { get; set; }

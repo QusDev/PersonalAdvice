@@ -1,0 +1,46 @@
+﻿@rendermode InteractiveServer
+
+@using Shared.DTOs.Entities
+@using Shared.DTOs.Genres
+@using System.ComponentModel.DataAnnotations
+
+<div class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold">@(GenreModel.Id == 0 ? "Створити новий жанр" : "Редагувати жанр")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            
+            <EditForm FormName="GenreForm" Model="GenreModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Назва жанру</label>
+                        <InputText @bind-Value="GenreModel.Name" class="form-control rounded-3 border-0 bg-light p-3" placeholder="Наприклад: Наукова фантастика" />
+                        <ValidationMessage For="@(() => GenreModel.Name)" class="text-danger small" />
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" @onclick="Close">Скасувати</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Зберегти</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public GenreDto GenreModel { get; set; } = new();
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<GenreDto> OnSave { get; set; }
+
+    private async Task Close() => await IsVisibleChanged.InvokeAsync(false);
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(GenreModel);
+        await Close();
+    }
+}

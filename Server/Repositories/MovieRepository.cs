@@ -11,6 +11,13 @@ namespace Server.Repositories
         {
         }
 
+        public async Task DeleteAllAsync()
+        {
+            var movies = await _context.Movies.ToListAsync();
+            _context.Movies.RemoveRange(movies);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<bool> IsExistMovieAsync(string title, int year)
         {
             return await _dbSet.AnyAsync(x => x.Title == title && x.ReleaseYear == year);

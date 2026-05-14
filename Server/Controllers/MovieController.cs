@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Extensions;
+using Server.Services.Entities;
 using Server.Services.Entities.Interfaces;
 using Server.Services.Tmdb.Interfaces;
 using Shared.Constants;
@@ -63,6 +64,14 @@ namespace Server.Controllers
             return Ok(result.Value);
         }
 
+        [HttpDelete("delete-all")]
+        [Authorize(Roles = Role.Admin)]
+        public async Task<IActionResult> DeleteAll()
+        {
+            await _movieService.DeleteAllAsync();
+            return Ok();
+        }
+
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -91,12 +100,12 @@ namespace Server.Controllers
 
         [HttpPost("import/popular")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1)
+        public async Task<IActionResult> ImportPopular([FromQuery] int page = 1, [FromQuery]int pageCount = 1)
         {
             if (page < 1 || page > 500)
                 return BadRequest("The page number must be between 1 and 500");
 
-            var result = await _tmdbService.ImportPopularMoviesAsync(page);
+            var result = await _tmdbService.ImportPopularMoviesAsync(page, pageCount);
 
             if (result.IsFailure)
             {

@@ -13,5 +13,6 @@ namespace Server.Services.Entities.Interfaces
         Task<Result<PagedResponse<MovieDto>>> GetAllAsync(GetAllMovieDto dto);
         Task<Result<MovieDto>> GetByIdAsync(int id);
         Task<bool> IsExistsMovieAsync(string title, int year);
+        Task DeleteAllAsync();
     }
 }

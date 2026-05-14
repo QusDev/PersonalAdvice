@@ -1,0 +1,68 @@
+﻿@page "/admin/tables"
+@rendermode InteractiveServer
+@attribute [Authorize(Roles = Role.Admin)]
+@using Client.Components.Pages.Admin.Genres
+@using Client.Components.Pages.Admin.Movies
+@using Client.Components.Pages.Admin.Tracks
+@using Microsoft.AspNetCore.Authorization
+@using Shared.Constants
+
+
+<div class="container-fluid mt-4 px-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin" class="text-decoration-none text-muted">Панель керування</a></li>
+            <li class="breadcrumb-item active fw-bold">Таблиці даних</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="d-flex gap-2 p-2 bg-light rounded-4 shadow-sm overflow-auto">
+                <button class="btn @GetTabClass("tracks")" @onclick='() => SetTab("tracks")'>
+                    <i class="bi bi-book me-2"></i>Треки
+                </button>
+                <button class="btn @GetTabClass("movies")" @onclick='() => SetTab("movies")'>
+                    <i class="bi bi-person-badge me-2"></i>Фільми
+                </button>
+                <button class="btn @GetTabClass("genres")" @onclick='() => SetTab("genres")'>
+                    <i class="bi bi-tags me-2"></i>Жанри
+                </button>
+                <button class="btn @GetTabClass("users")" @onclick='() => SetTab("users")'>
+                    <i class="bi bi-people me-2"></i>Користувачі
+                </button>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-0">
+                    @switch (activeTable)
+                    {
+                        case "tracks":
+                            <AdminTracksTable/>
+                            break;
+                        case "movies":
+                            <AdminMoviesTable/>
+                            break;
+                        case "genres":
+                            <AdminGenresTable/>
+                            break;
+                        case "users":
+                            <div class="p-5 text-center text-muted">Таблиця Користувачів (в розробці)</div>
+                            break;
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string activeTable = "tracks";
+
+    private void SetTab(string tableName) => activeTable = tableName;
+
+    private string GetTabClass(string tableName) => 
+        activeTable == tableName ? "btn-primary shadow-sm rounded-pill px-4" : "btn-light text-muted rounded-pill px-4";
+}

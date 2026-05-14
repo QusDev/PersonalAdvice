@@ -1,0 +1,123 @@
+﻿@inject IGenreService genreService;
+
+@using Client.Services.Interfaces
+@using Shared.DTOs.Genres
+@using Shared.DTOs.Tracks
+@using Shared.DTOs.Entities
+
+<div class="modal fade @(IsVisible ? "show d-block" : "")" tabindex="-1" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="fw-bold">@(TrackModel.Id == 0 ? "Додати новий трек" : "Редагувати трек")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            
+            <EditForm Model="TrackModel" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <div class="modal-body py-0" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row g-3 p-2">
+                        <!-- Основна інформація -->
+                        <div class="col-md-8">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Назва</label>
+                            <InputText @bind-Value="TrackModel.Title" class="form-control rounded-3 bg-light border-0" placeholder="Назва треку" />
+                            <ValidationMessage For="@(() => TrackModel.Title)" class="text-danger small" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Альбом</label>
+                            <InputText @bind-Value="TrackModel.AlbumName" class="form-control rounded-3 bg-light border-0" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Рік випуску</label>
+                            <InputNumber @bind-Value="TrackModel.ReleaseYear" class="form-control rounded-3 bg-light border-0" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Тривалість (хв)</label>
+                            <InputNumber @bind-Value="TrackModel.DurationMinutes" class="form-control rounded-3 bg-light border-0" step="0.1" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Рейтинг</label>
+                            <InputNumber @bind-Value="TrackModel.AverageRating" class="form-control rounded-3 bg-light border-0" step="0.1" />
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Жанри (виберіть декілька)</label>
+                            <select class="form-select rounded-3 bg-light border-0 shadow-none"
+                                    multiple
+                                    @onchange="OnGenreSelectionChanged"
+                                    style="height: 120px;">
+                                @foreach (var genre in _allGenres)
+                                {
+                                    <option value="@genre.Id" selected="@SelectedGenreIds.Contains(genre.Id)">
+                                        @genre.Name
+                                    </option>
+                                }
+                            </select>
+                            <div class="form-text small text-muted">Утримуйте Ctrl (або Cmd), щоб вибрати кілька жанрів.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted text-uppercase">URL Обкладинки</label>
+                            <InputText @bind-Value="TrackModel.PhotoUrl" class="form-control rounded-3 bg-light border-0" />
+                        </div>
+
+                        <div class="col-12 text-center my-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" @onclick="() => _showLyrics = !_showLyrics">
+                                @(_showLyrics ? "Сховати слова" : "Додати слова пісні")
+                            </button>
+                        </div>
+
+                        @if (_showLyrics)
+                        {
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Текст пісні</label>
+                                <InputTextArea @bind-Value="TrackModel.Lyrics" class="form-control rounded-3 bg-light border-0" rows="5" />
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" @onclick="Close">Скасувати</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Зберегти трек</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public TrackDto TrackModel { get; set; } = new();
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback<TrackDto> OnSave { get; set; }
+
+    private List<GenreDto> _allGenres = new();
+    private List<int> SelectedGenreIds => TrackModel.Genres?.Select(g => g.Id).ToList() ?? new();
+    private bool _showLyrics = false;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var genres = await genreService.GetGenresAsync(new GetAllGenreDto() { PageNumber = 1, PageSize = 100 });
+        if (genres != null) _allGenres = genres.Items.ToList();
+    }
+
+    private void OnGenreSelectionChanged(ChangeEventArgs e)
+    {
+        var selectedValues = (string[])e.Value!;
+        var ids = selectedValues.Select(int.Parse).ToList();
+
+        TrackModel.Genres = _allGenres
+            .Where(g => ids.Contains(g.Id))
+            .Select(g => new GenreDto { Id = g.Id, Name = g.Name })
+            .ToList();
+    }
+
+    private async Task Close() => await IsVisibleChanged.InvokeAsync(false);
+
+    private async Task HandleValidSubmit()
+    {
+        await OnSave.InvokeAsync(TrackModel);
+        await Close();
+    }
+}

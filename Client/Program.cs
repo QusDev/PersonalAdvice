@@ -1,5 +1,6 @@
 using Client.Components;
 using Client.Constant;
+using Client.Handlers;
 using Client.Providers;
 using Client.Services;
 using Client.Services.Interfaces;
@@ -18,16 +19,28 @@ builder.Configuration
 #endregion
 
 #region Dependecies
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddTransient<JwtHandler>();
+
 builder.Services.AddScoped<ILocalStorage, LocalStorage>();
 
 builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IGenreService, GenreService>().AddHttpMessageHandler<JwtHandler>();
+builder.Services.AddHttpClient<ITrackService, TrackService>().AddHttpMessageHandler<JwtHandler>();
+builder.Services.AddHttpClient<IMovieService, MovieService>().AddHttpMessageHandler<JwtHandler>();
 
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped(sp => (CustomAuthStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
 #endregion
 
+
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddAuthentication("JwtAuth")
+    .AddCookie("JwtAuth", options =>
+    {
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/not-found";
+    });
 
 builder.Services.Configure<ApiSettings>(builder.Configuration.GetSection("ApiSettings"));
 
@@ -51,6 +64,7 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveServerRenderMode()
+    .AllowAnonymous();
 
 app.Run();
