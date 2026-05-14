@@ -2,10 +2,18 @@
 @rendermode InteractiveServer
 
 @using Client.Constant
+@using Client.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.Extensions.Options
 @using Shared.DTOs.Entities
+@using System.Security.Claims
+@using Shared.Enums
+
 @inject HttpClient httpClient
 @inject IOptions<ApiSettings> options
+@inject IUserInteractionService userInteractionService;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navigationManager;
 
 <style>
     body {
@@ -55,7 +63,7 @@
     {
         <div class="row g-5">
             <div class="col-md-4">
-                <div class="position-relative shadow-lg rounded-4 overflow-hidden border-0">
+                <div class="position-relative shadow-lg rounded-4 overflow-hidden border-0 mb-4">
                     <img src="@_movie.PhotoUrl" class="img-fluid w-100" alt="@_movie.Title" style="min-height: 450px; object-fit: cover;">
                     
                     @if (_movie.Adult)
@@ -66,6 +74,28 @@
                     <div class="position-absolute bottom-0 end-0 m-3 badge bg-white p-2 shadow border d-flex align-items-center">
                         <i class="bi bi-star-fill d-flex text-warning me-1"></i>
                         <span class="fs-5 text-dark fw-bold">@_movie.AverageRating.ToString("0.0")</span>
+                    </div>
+                </div>
+                
+                <div class="d-flex flex-column gap-2">
+                    <button class="btn btn-primary btn-lg rounded-3 py-3 shadow-sm d-flex align-items-center justify-content-center"
+                            @onclick="() => HandleInteraction(UserInteractionType.View)">
+                        <i class="bi bi-play-fill fs-4 me-2"></i>
+                        <span class="fw-bold">Дивитися зараз</span>
+                    </button>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn @(_activeInteraction == UserInteractionType.Like ? "btn-success" : "btn-outline-success") flex-fill rounded-3 py-2 transition-all"
+                                @onclick="() => HandleInteraction(UserInteractionType.Like)">
+                            <i class="bi @(_activeInteraction == UserInteractionType.Like ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up") me-2"></i>
+                            @(_activeInteraction == UserInteractionType.Like ? "Подобається" : "Так")
+                        </button>
+
+                        <button class="btn @(_activeInteraction == UserInteractionType.Dislike ? "btn-danger" : "btn-outline-danger") flex-fill rounded-3 py-2 transition-all"
+                                @onclick="() => HandleInteraction(UserInteractionType.Dislike)">
+                            <i class="bi @(_activeInteraction == UserInteractionType.Dislike ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down") me-2"></i>
+                            @(_activeInteraction == UserInteractionType.Dislike ? "Не подобається" : "Ні")
+                        </button>
                     </div>
                 </div>
             </div>
@@ -117,15 +147,6 @@
                         </div>
                     </div>
                 </div>
-
-                @* <div class="mt-5 d-flex gap-3">
-                    <button class="btn btn-primary btn-lg rounded-pill px-5 shadow">
-                        <i class="bi bi-play-fill me-1"></i> Дивитися зараз
-                    </button>
-                    <button class="btn btn-outline-secondary btn-lg rounded-pill px-4">
-                        <i class="bi bi-bookmark-plus"></i>
-                    </button>
-                </div> *@
             </div>
         </div>
     }
@@ -133,10 +154,51 @@
 
 @code {
     [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
     private MovieDto? _movie;
 
-    protected override async Task OnInitializedAsync() =>
+    private UserInteractionDto userInteraction = new();
+    private UserInteractionType? _activeInteraction = null;
+
+    protected override async Task OnInitializedAsync()
+    {
         _movie = await httpClient.GetFromJsonAsync<MovieDto>($"{options.Value.BackendApiBaseUrl}/movies/{Id}");
+
+        if (AuthStateTask == null)
+        {
+            return;
+        }
+
+        var authState = await AuthStateTask;
+        var user = authState.User;
+
+        if (user.Identity is not { IsAuthenticated: true })
+        {
+            return;
+        }
+
+        int userId;
+        var isUserId = int.TryParse(user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value, out userId);
+
+        if (!isUserId)
+        {
+            return;
+        }
+
+        var userInteractionExistResult = await userInteractionService.GetUserInteraction(Id, userId);
+        if (userInteractionExistResult.userInteraction == null)
+        {
+            userInteraction.UserId = userId;
+            userInteraction.MediaId = Id;    
+        }
+        else
+        {
+            userInteraction = userInteractionExistResult.userInteraction;
+            _activeInteraction = userInteraction.Type;
+        }
+
+    }
 
     private string FormatDuration(double minutes)
     {
@@ -148,9 +210,23 @@
     private string GetCollaboratorsByRole(string role)
     {
         var list = _movie?.MediaCollaborators
-            .Where(c => c.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
-            .Select(c => c.Person.FullName).ToList();
-            
+        .Where(c => c.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
+        .Select(c => c.Person.FullName).ToList();
+
         return list != null && list.Any() ? string.Join(", ", list) : "Не вказано";
+    }
+
+    private async Task HandleInteraction(UserInteractionType type)
+    {
+        if (userInteraction.UserId > 0)
+        {
+            userInteraction.Type = type;
+            await userInteractionService.HandleUserInteraction(userInteraction);
+            _activeInteraction = type;
+        }
+        else
+        {
+            navigationManager.NavigateTo("login");
+        }
     }
 }

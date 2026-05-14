@@ -65,6 +65,27 @@ namespace Server.Services.Entities
             return Result<UserInteractionDto>.Success(genreDto);
         }
 
+        public async Task<Result<UserInteractionDto>> GetByMediaAndUserIdsAsync(int mediaId, int userId)
+        {
+            var result = await _unitOfWork.UserInteractions.GetByMediaAndUserAsync(mediaId, userId);
+
+            if (result == null)
+            {
+                return Result<UserInteractionDto>.Fail(Error.NotFound($"User interaction with media: {mediaId} and user: {userId} not found"));
+            }
+
+            var userInteraction = _mapper.Map<UserInteractionDto>(result);
+            return Result<UserInteractionDto>.Success(userInteraction);
+        }
+
+        public async Task<Result<bool>> HandleAsync(UserInteractionDto dto)
+        {
+            var entity = _mapper.Map<UserInteractionEntity>(dto);
+            _unitOfWork.UserInteractions.CreateOrUpdate(entity);
+            await _unitOfWork.SaveAsync();
+            return Result<bool>.Success(true);
+        }
+
         public async Task<Result<bool>> UpdateAsync(UpdateUserInteractionDto dto)
         {
             var userInteraction = await _unitOfWork.UserInteractions.GetByIdAsync(dto.Id);

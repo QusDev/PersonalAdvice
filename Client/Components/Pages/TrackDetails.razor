@@ -2,11 +2,19 @@
 @rendermode InteractiveServer
 
 @using Client.Constant
+@using Client.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.Extensions.Options
 @using Shared.DTOs.Entities
+@using Shared.Enums
+@using System.Security.Claims
 
 @inject HttpClient httpClient
 @inject IOptions<ApiSettings> options
+@inject IUserInteractionService userInteractionService;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navigationManager;
+
 
 <style>
     .lyrics-box {
@@ -75,7 +83,7 @@
                         <span class="badge bg-success px-3">Альбом: @_track.AlbumName</span>
                         <span class="text-muted small">@_track.ReleaseYear</span>
                     </div>
-                    
+
                     <h1 class="display-5 fw-bold mb-1">@_track.Title</h1>
                     <h3 class="text-success fw-light mb-4">@GetCollaboratorsByRole("Artist")</h3>
 
@@ -83,7 +91,7 @@
                     {
                         <div class="audio-player mb-4 p-3 bg-black bg-opacity-50 rounded-4 border border-secondary shadow-sm">
                             <div class="small text-white-50 mb-2"><i class="bi bi-play-circle me-1"></i> Pre-listen</div>
-                            <audio controls class="w-100">
+                            <audio controls class="w-100" @onplay="() => HandleInteraction(UserInteractionType.Listen)">
                                 <source src="@_track.AudioUrl" type="audio/mpeg">
                             </audio>
                         </div>
@@ -104,11 +112,19 @@
                         </div>
                     </div>
 
-                    @* <div class="d-flex gap-3 mt-4">
-                        <button class="btn btn-outline-light btn-lg rounded-pill px-4">
-                            <i class="bi bi-plus-lg"></i>
+                    <div class="d-flex gap-2">
+                        <button class="btn @(_activeInteraction == UserInteractionType.Like ? "btn-success" : "btn-outline-success") flex-fill rounded-3 py-2 transition-all"
+                                @onclick="() => HandleInteraction(UserInteractionType.Like)">
+                            <i class="bi @(_activeInteraction == UserInteractionType.Like ? "bi-hand-thumbs-up-fill" : "bi-hand-thumbs-up") me-2"></i>
+                            @(_activeInteraction == UserInteractionType.Like ? "Подобається" : "Так")
                         </button>
-                    </div> *@
+
+                        <button class="btn @(_activeInteraction == UserInteractionType.Dislike ? "btn-danger" : "btn-outline-danger") flex-fill rounded-3 py-2 transition-all"
+                                @onclick="() => HandleInteraction(UserInteractionType.Dislike)">
+                            <i class="bi @(_activeInteraction == UserInteractionType.Dislike ? "bi-hand-thumbs-down-fill" : "bi-hand-thumbs-down") me-2"></i>
+                            @(_activeInteraction == UserInteractionType.Dislike ? "Не подобається" : "Ні")
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -130,10 +146,50 @@
 
 @code {
     [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
     private TrackDto? _track;
 
-    protected override async Task OnInitializedAsync() =>
+    private UserInteractionDto userInteraction = new();
+    private UserInteractionType? _activeInteraction = null;
+
+    protected override async Task OnInitializedAsync()
+    {
         _track = await httpClient.GetFromJsonAsync<TrackDto>($"{options.Value.BackendApiBaseUrl}/tracks/{Id}");
+        
+        if (AuthStateTask == null)
+        {
+            return;
+        }
+
+        var authState = await AuthStateTask;
+        var user = authState.User;
+
+        if (user.Identity is not { IsAuthenticated: true })
+        {
+            return;
+        }
+
+        int userId;
+        var isUserId = int.TryParse(user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value, out userId);
+
+        if (!isUserId)
+        {
+            return;
+        }
+
+        var userInteractionExistResult = await userInteractionService.GetUserInteraction(Id, userId);
+        if (userInteractionExistResult.userInteraction == null)
+        {
+            userInteraction.UserId = userId;
+            userInteraction.MediaId = Id;
+        }
+        else
+        {
+            userInteraction = userInteractionExistResult.userInteraction;
+            _activeInteraction = userInteraction.Type;
+        }
+    }
 
     private string FormatDuration(double minutes)
     {
@@ -146,4 +202,18 @@
         string.Join(", ", _track?.MediaCollaborators
             .Where(c => c.Role.Equals(role, StringComparison.OrdinalIgnoreCase))
             .Select(c => c.Person.FullName) ?? new[] { "Невідомий виконавець" });
+
+    private async Task HandleInteraction(UserInteractionType type)
+    {
+        if (userInteraction.UserId > 0)
+        {
+            userInteraction.Type = type;
+            await userInteractionService.HandleUserInteraction(userInteraction);
+            _activeInteraction = type;
+        }
+        else
+        {
+            navigationManager.NavigateTo("login");
+        }
+    }
 }
