@@ -139,42 +139,12 @@
             }
         </div>
 
-        @if (_totalPages > 1)
-        {
-            <nav class="mt-5 mb-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item @(!_hasPrevious ? "disabled" : "")">
-                        <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
-                        @onclick="() => ChangePage(_currentPage - 1)"
-                        disabled="@(!_hasPrevious)">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                    </li>
-
-                    @for (int i = 1; i <= _totalPages; i++)
-                    {
-                        var pageNum = i;
-                        <li class="page-item @(_currentPage == pageNum ? "active" : "")">
-                            <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(_currentPage == pageNum ? "bg-primary text-white" : "text-dark")"
-                            @onclick="() => ChangePage(pageNum)">
-                                @pageNum
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item @(!_hasNext ? "disabled" : "")">
-                        <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
-                        @onclick="() => ChangePage(_currentPage + 1)"
-                        disabled="@(!_hasNext)">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-                <div class="text-center text-muted small mt-2">
-                    Показано сторінку @_currentPage з @_totalPages (Всього: @_totalCount)
-                </div>
-            </nav>
-        }
+        <Pagination CurrentPage="@_currentPage"
+                    TotalPages="@_totalPages"
+                    TotalCount="@_totalCount"
+                    HasPrevious="@_hasPrevious"
+                    HasNext="@_hasNext"
+                    OnPageChanged="ChangePage" />
     }
 </div>
 
@@ -188,7 +158,7 @@
     private bool _hasPrevious;
     private bool _hasNext;
 
-    private const int pageSize = 12;
+    private const int pageSize = 8;
     private int mediaTypeInt = 0;
 
     protected override async Task OnInitializedAsync() => await LoadData();

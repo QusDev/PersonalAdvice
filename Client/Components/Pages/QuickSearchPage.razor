@@ -178,39 +178,12 @@
             }
         </div>
 
-        <div class="d-flex justify-content-center mt-5">
-            <nav aria-label="Search results pages">
-                <ul class="pagination pagination-md">
-                    <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
-                        <button class="page-link bg-dark border-secondary text-white"
-                                @onclick="() => ChangePage(_currentPage - 1)">
-                            <i class="bi bi-chevron-left"></i>
-                        </button>
-                    </li>
-
-                    @for (int i = 1; i <= _totalPages; i++)
-                    {
-                        var pageNumber = i;
-                        <li class="page-item @(_currentPage == pageNumber ? "active" : "")">
-                            <button class="page-link @(_currentPage == pageNumber ? "bg-primary border-primary" : "bg-dark border-secondary text-white")"
-                                    @onclick="() => ChangePage(pageNumber)">
-                                @pageNumber
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item @(_currentPage == _totalPages ? "disabled" : "")">
-                        <button class="page-link bg-dark border-secondary text-white"
-                                @onclick="() => ChangePage(_currentPage + 1)">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-        <div class="text-center text-muted small mt-2">
-            Сторінка @_currentPage з @_totalPages
-        </div>
+        <Pagination CurrentPage="@_currentPage"
+                    TotalPages="@_totalPages"
+                    TotalCount="@_totalCount"
+                    HasPrevious="@_hasPrevious"
+                    HasNext="@_hasNext"
+                    OnPageChanged="ChangePage" />
     }
 </div>
 
@@ -220,8 +193,11 @@
     private List<MediaCardDto> _searchResults = new();
 
     private int _currentPage = 1;
-    private int _pageSize = 6;
     private int _totalPages = 1;
+    private const int _pageSize = 6;
+    private bool _hasPrevious;
+    private bool _hasNext;
+    private int _totalCount;
 
     private async Task HandleKeyUp(KeyboardEventArgs e)
     {
@@ -242,10 +218,11 @@
 
     private async Task ChangePage(int newPage)
     {
-        if (newPage < 1 || newPage > _totalPages || newPage == _currentPage) return;
-
-        _currentPage = newPage;
-        await PerformSearch();
+        if (newPage >= 1 && newPage <= _totalPages)
+        {
+            _currentPage = newPage;
+            await PerformSearch();
+        }
     }
 
     private async Task PerformSearch()

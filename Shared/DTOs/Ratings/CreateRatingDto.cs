@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Shared.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Shared.DTOs.Ratings
 {
@@ -10,5 +11,6 @@ namespace Shared.DTOs.Ratings
         public int MediaId { get; set; }
         [Required]
         public double Score { get; set; }
+        public RecommendationAlgorithm Algorithm { get; set; }
     }
 }

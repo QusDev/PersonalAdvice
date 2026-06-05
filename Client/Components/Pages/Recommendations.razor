@@ -1,0 +1,276 @@
+﻿@page "/recommendations"
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@using Client.Services.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Shared.DTOs.Entities
+@using Shared.DTOs.MediaContent
+@using Shared.Enums
+@using System.Diagnostics
+@using System.Security.Claims
+@using Shared.DTOs.Repositories
+
+@inject IRecommendationService recsService;
+@inject IMediaService mediaService;
+@inject NavigationManager navigationManager;
+
+<style>
+    .item-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+
+    .filter-section {
+        background-color: #f8f9fa;
+        border-radius: 1rem;
+    }
+
+    .page-link {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+</style>
+
+<div class="container py-4">
+    <h2 class="fw-bold text-dark mb-4 border-bottom pb-2">Персональні рекомендації</h2>
+
+    <div class="card border-0 shadow-sm filter-section p-4 mb-5">
+        <div class="row g-3 align-items-end justify-content-between">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-muted text-uppercase">Алгоритм підбору</label>
+                <div class="btn-group w-100 p-1 bg-white rounded-3 shadow-sm" role="group">
+                    @foreach (RecommendationAlgorithm alg in Enum.GetValues(typeof(RecommendationAlgorithm)))
+                    {
+                        <input type="radio" class="btn-check" name="alg-radio" id="alg-@alg"
+                               checked="@(_selectedAlgorithm == alg)"
+                               @onchange="() => ChangeAlgorithm(alg)">
+                        <label class="btn btn-outline-primary border-0 rounded-3" for="alg-@alg">
+                            @GetAlgorithmName(alg)
+                        </label>
+                    }
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-primary rounded-pill px-4 shadow w-100" @onclick="() => LoadRecommendations(true)">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Оновити базу
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-overlay">
+            <div class="text-center p-5 bg-white shadow-lg rounded-4 border">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+                <h4 class="mt-4 text-dark fw-bold">Генеруємо рекомендації...</h4>
+                <p class="text-muted">Це може зайняти кілька секунд</p>
+                <div class="badge bg-light text-primary fs-6 py-2 px-3 rounded-pill border">
+                    <i class="bi bi-stopwatch me-1"></i> @_stopwatch.Elapsed.ToString(@"ss\.ff") сек
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (_recommendations == null)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">Завантаження...</p>
+        </div>
+    }
+    else if (!_recommendations.Any())
+    {
+        <div class="alert alert-info rounded-4 border-0 shadow-sm text-center py-4">
+            <i class="bi bi-robot fs-3 d-block mb-2"></i>
+            Поки що немає рекомендацій. Спробуйте інший алгоритм або оцініть більше медіа.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in _recommendations)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card"
+                         @onclick='() => NavigateToDetails(item)'>
+                        <div class="position-relative">
+                            <img src="@item.PhotoUrl" class="card-img-top" alt="@item.Title" style="height: 280px; object-fit: cover;">
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <span class="badge bg-white text-dark shadow-sm px-2 py-1">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>@item.AverageRating.ToString("0.0")
+                                </span>
+                            </div>
+                            <div class="position-absolute bottom-0 start-0 m-2">
+                                <span class="badge @(item.Type == MediaType.Movie ? "bg-primary" : "bg-success") shadow-sm">
+                                    <i class="bi @(item.Type == MediaType.Movie ? "bi-film" : "bi-music-note-beamed") me-1"></i>
+                                    @(item.Type == MediaType.Movie ? "Фільм" : "Трек")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-dark text-truncate mb-1">@item.Title</h6>
+                            <p class="card-text text-secondary small mb-2">
+                                <i class="bi bi-calendar3 me-1"></i> @item.ReleaseYear
+                            </p>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var genre in item.Genres.Take(2))
+                                {
+                                    <span class="badge bg-light text-primary border-0 small">@genre.Name</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <Pagination CurrentPage="@_currentPage"
+                    TotalPages="@_totalPages"
+                    TotalCount="@_totalCount"
+                    HasPrevious="@_hasPrevious"
+                    HasNext="@_hasNext"
+                    OnPageChanged="ChangePage" />
+    }
+</div>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private List<MediaCardDto>? _recommendations;
+    private RecommendationAlgorithm _selectedAlgorithm = RecommendationAlgorithm.Hybrid;
+
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private const int _pageSize = 12;
+    private bool _hasPrevious;
+    private bool _hasNext;
+    private int _totalCount;
+
+    private bool _isLoading = false;
+    private Stopwatch _stopwatch = new();
+    private System.Timers.Timer? _timer;
+
+    protected override async Task OnInitializedAsync() => await LoadRecommendations();
+
+    private async Task ChangeAlgorithm(RecommendationAlgorithm algorithm)
+    {
+        _selectedAlgorithm = algorithm;
+        _currentPage = 1;
+        await LoadRecommendations(true);
+    }
+
+    private async Task ChangePage(int newPage)
+    {
+        if (newPage >= 1 && newPage <= _totalPages)
+        {
+            _currentPage = newPage;
+            await LoadRecommendations(false);
+        }
+    }
+
+    private async Task LoadRecommendations(bool forceUpdate = false)
+    {
+        if (AuthStateTask == null) { navigationManager.NavigateTo("login"); return; }
+        var authState = await AuthStateTask;
+        if (authState.User.Identity is not { IsAuthenticated: true }) { navigationManager.NavigateTo("login"); return; }
+
+        int userId = int.Parse(authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)!.Value);
+
+        if (forceUpdate)
+        {
+            _isLoading = true;
+            _stopwatch.Restart();
+            StartTimer();
+        }
+
+        try
+        {
+            if (forceUpdate)
+            {
+                switch (_selectedAlgorithm)
+                {
+                    case RecommendationAlgorithm.Collaborative: await recsService.UpdateCollaborativeRecs(userId); break;
+                    case RecommendationAlgorithm.ContentBased: await recsService.UpdateContentBasedRecs(userId); break;
+                    case RecommendationAlgorithm.Hybrid: await recsService.UpdateHybridRecs(userId); break;
+                }
+            }
+
+            var response = await mediaService.GetUserMediaRecommendationsAsync(new GetUserMediaRecommendationsDto()
+            {
+                UserId = userId,
+                Algorithm = _selectedAlgorithm,
+                PageNumber = _currentPage,
+                PageSize = _pageSize
+            });
+
+            if (response != null)
+            {
+                _recommendations = response.Items.ToList();
+                _totalPages = response.TotalPages;
+                _hasPrevious = response.HasPrevious;
+                _hasNext = response.HasNext;
+                _totalCount = response.TotalCount;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            if (forceUpdate)
+            {
+                _isLoading = false;
+                _stopwatch.Stop();
+                StopTimer();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private string GetAlgorithmName(RecommendationAlgorithm alg) => alg switch
+    {
+        RecommendationAlgorithm.Collaborative => "Розумний підбір",
+        RecommendationAlgorithm.ContentBased => "За жанрами",
+        RecommendationAlgorithm.Hybrid => "Мікс для вас",
+        _ => "Інше"
+    };
+
+    private void StartTimer()
+    {
+        _timer = new System.Timers.Timer(100);
+        _timer.Elapsed += (s, e) => InvokeAsync(StateHasChanged);
+        _timer.Start();
+    }
+
+    private void StopTimer() { _timer?.Stop(); _timer?.Dispose(); }
+
+    private void NavigateToDetails(MediaCardDto item)
+    {
+        var entity = item.Type == MediaType.Movie ? "movies" : "tracks";
+        navigationManager.NavigateTo($"/{entity}/{item.Id}");
+    }
+}

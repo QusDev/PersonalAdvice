@@ -10,6 +10,7 @@ namespace Server.Repositories.Interfaces
             Expression<Func<T, TResult>> selector,
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? transform = null,
             int pageNumber = 1,
             int pageSize = 10,
             params Expression<Func<T, object>>[] includes
@@ -18,6 +19,7 @@ namespace Server.Repositories.Interfaces
         Task<PagedResponse<T>> GetAllAsync(
             Expression<Func<T, bool>>? filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+            Func<IQueryable<T>, IQueryable<T>>? transform = null,
             int pageNumber = 1,
             int pageSize = 10,
             params Expression<Func<T, object>>[] includes

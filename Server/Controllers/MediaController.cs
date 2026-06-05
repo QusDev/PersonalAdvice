@@ -41,5 +41,18 @@ namespace Server.Controllers
 
             return Ok(result.Value);
         }
+
+        [HttpGet("recommendations")]
+        public async Task<IActionResult> Recommendations([FromQuery] GetUserMediaRecommendationsDto dto)
+        {
+            var result = await _mediaService.GetUserMediaRecommendationsAsync(dto);
+
+            if (result.IsFailure)
+            {
+                return result.Failure!.ToResponse();
+            }
+
+            return Ok(result.Value);
+        }
     }
 }
