@@ -28,9 +28,9 @@
                 <button class="btn @GetTabClass("genres")" @onclick='() => SetTab("genres")'>
                     <i class="bi bi-tags me-2"></i>Жанри
                 </button>
-                <button class="btn @GetTabClass("users")" @onclick='() => SetTab("users")'>
+@*                 <button class="btn @GetTabClass("users")" @onclick='() => SetTab("users")'>
                     <i class="bi bi-people me-2"></i>Користувачі
-                </button>
+                </button> *@
             </div>
         </div>
 
@@ -48,9 +48,9 @@
                         case "genres":
                             <AdminGenresTable/>
                             break;
-                        case "users":
+@*                         case "users":
                             <div class="p-5 text-center text-muted">Таблиця Користувачів (в розробці)</div>
-                            break;
+                            break; *@
                     }
                 </div>
             </div>

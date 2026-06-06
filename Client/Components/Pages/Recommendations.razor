@@ -63,6 +63,11 @@
                 <div class="btn-group w-100 p-1 bg-white rounded-3 shadow-sm" role="group">
                     @foreach (RecommendationAlgorithm alg in Enum.GetValues(typeof(RecommendationAlgorithm)))
                     {
+                        if (alg == RecommendationAlgorithm.Popularity)
+                        {
+                            continue;
+                        }
+
                         <input type="radio" class="btn-check" name="alg-radio" id="alg-@alg"
                                checked="@(_selectedAlgorithm == alg)"
                                @onchange="() => ChangeAlgorithm(alg)">

@@ -1,4 +1,6 @@
-﻿<style>
+﻿@rendermode InteractiveServer
+
+<style>
     .page-link {
         width: 40px;
         height: 40px;
@@ -16,7 +18,7 @@
 {
     <nav class="mt-4 mb-4">
         <ul class="pagination justify-content-center align-items-center">
-            @* Кнопка Назад *@
+            
             <li class="page-item @(!HasPrevious ? "disabled" : "")">
                 <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
                         @onclick="() => OnPageChanged.InvokeAsync(CurrentPage - 1)"
@@ -25,7 +27,6 @@
                 </button>
             </li>
 
-            @* Перша сторінка *@
             <li class="page-item @(CurrentPage == 1 ? "active" : "")">
                 <button class="page-link border-0 shadow-sm mx-1 rounded-circle @(CurrentPage == 1 ? "bg-primary text-white" : "text-dark")"
                         @onclick="() => OnPageChanged.InvokeAsync(1)">
@@ -33,13 +34,11 @@
                 </button>
             </li>
 
-            @* Трікрапка зліва *@
             @if (CurrentPage > 3)
             {
                 <li class="page-item disabled"><span class="page-link border-0">...</span></li>
             }
 
-            @* Середні сторінки *@
             @for (int i = Math.Max(2, CurrentPage - 1); i <= Math.Min(TotalPages - 1, CurrentPage + 1); i++)
             {
                 var pageNum = i;
@@ -51,13 +50,11 @@
                 </li>
             }
 
-            @* Трікрапка справа *@
             @if (CurrentPage < TotalPages - 2)
             {
                 <li class="page-item disabled"><span class="page-link border-0">...</span></li>
             }
 
-            @* Остання сторінка *@
             @if (TotalPages > 1)
             {
                 <li class="page-item @(CurrentPage == TotalPages ? "active" : "")">
@@ -68,7 +65,6 @@
                 </li>
             }
 
-            @* Кнопка Вперед *@
             <li class="page-item @(!HasNext ? "disabled" : "")">
                 <button class="page-link border-0 shadow-sm mx-1 rounded-circle"
                         @onclick="() => OnPageChanged.InvokeAsync(CurrentPage + 1)"
