@@ -1,11 +1,4 @@
-﻿@* <Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router> *@
-
-@using Client.Components.Pages
+﻿@using Client.Components.Pages
 @using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
@@ -15,12 +8,10 @@
                 <NotAuthorized>
                     @if (context.User.Identity?.IsAuthenticated != true)
                     {
-                        @* Якщо користувач не увійшов — перекидаємо на ВАШУ сторінку логіна *@
                         <RedirectToLogin />
                     }
                     else
                     {
-                        @* Якщо увійшов, але немає ролі Admin *@
                         <div class="container mt-5">
                             <div class="alert alert-danger">У вас немає прав доступу до цього розділу.</div>
                         </div>

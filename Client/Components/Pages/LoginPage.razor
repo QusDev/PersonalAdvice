@@ -18,7 +18,6 @@
             <EditForm FormName="LoginForm" Model="_loginModel" OnValidSubmit="HandleLogin">
                 <DataAnnotationsValidator />
 
-                <!-- Email -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Email</label>
                     <div class="input-group">
@@ -28,7 +27,6 @@
                     <ValidationMessage For="@(() => _loginModel.Email)" class="text-danger small" />
                 </div>
 
-                <!-- Password -->
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Пароль</label>
                     <div class="input-group">
@@ -38,7 +36,6 @@
                     <ValidationMessage For="@(() => _loginModel.Password)" class="text-danger small" />
                 </div>
 
-                <!-- Вивід помилок Failure від бекенда -->
                 @if (!string.IsNullOrEmpty(_errorMessage))
                 {
                     <div class="alert alert-danger py-2 px-3 mb-3 small" role="alert">
@@ -78,7 +75,6 @@
         _isProcessing = true;
         _errorMessage = string.Empty;
 
-        // Використовуємо метод LoginAsync (або Login) вашого AuthService
         var result = await AuthService.LoginAsync(_loginModel);
 
         if (result.isSuccess)
